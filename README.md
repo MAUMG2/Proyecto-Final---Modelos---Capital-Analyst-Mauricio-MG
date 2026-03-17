@@ -9,16 +9,33 @@
 
 ## 📁 Estructura del Proyecto
 
-| Carpeta | Contenido |
-|---------|-----------|
-| `R/Clases/` | Notebooks de clase en R Markdown |
-| `R/Tareas/` | Tareas desarrolladas en R |
-| `R/HTML/` | Versiones HTML exportadas |
-| `R/Datos/` | Datos históricos xlsx y csv |
-| `Python/` | Notebook de Colab con datos Refinitiv |
-| `Screenshots/` | Capturas de HowMarketsWorks |
+## 📁 Archivos del Proyecto
 
----
+### 🐍 Python (Google Colab)
+| Archivo | Descripción |
+|---------|-------------|
+| `PortRefinitivColab.ipynb` | Notebook principal con datos Refinitiv 1-min |
+
+### 📊 R (Posit Cloud) — Clases
+| Archivo | Descripción |
+|---------|-------------|
+| `Clase 1 Introducción 14 Ene 26.Rmd` | Introducción a R y datos financieros |
+| `Clase 2 Regresión lineal 21 Ene 26.Rmd` | Regresión Lineal Simple |
+| `Clase 3 Regresión lineal simple y múltiple 28 Ene 26.Rmd` | Regresión Simple y Múltiple |
+| `Clase 4 Regresión Lineal Múltiple 4 Feb 26.Rmd` | Regresión Múltiple avanzada |
+| `Clase 5 Problemas de los modelos de Regresión Lineal Múltiple.Rmd` | Diagnósticos y problemas |
+| `Clase 6 Data Panel 25 Feb 25.Rmd` | Modelos de datos en panel |
+
+### 📝 R (Posit Cloud) — Tareas
+| Archivo | Descripción |
+|---------|-------------|
+| `Tarea 1 acciones Rstudio continuacion.Rmd` | Análisis de acciones en R |
+| `Tarea 2 Regresion Lineal 27 Ene 26.Rmd` | Regresión Lineal Simple |
+| `Tarea 3 Clase Regresión Simple - Acciones y xls.Rmd` | Regresión con datos reales |
+| `Tarea 4 Clase Regresion Multiple - Acciones.Rmd` | Regresión Múltiple con acciones |
+| `Tarea 5 Detección problemas Regresion Lineal.Rmd` | Multicolinealidad y heterocedasticidad |
+| `Tarea 6 Comparativo Bloomberg.Rmd` | Comparativo Bloomberg vs Refinitiv |
+| `Tarea 7 Clase Bloomberg.Rmd` | Análisis con datos Bloomberg |
 
 ## 📐 Modelos Implementados
 
