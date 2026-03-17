@@ -72,7 +72,7 @@
 
 ## 🔗 Links
 
-- 📓 [Google Colab](TU_LINK_COLAB)
+- 📓 [Google Colab]((https://colab.research.google.com/drive/19reW6BRbSi5xSge5Om36Y47kkCSBInRC?usp=sharing))
 - 🌐 [Dashboard Interactivo](TU_USUARIO.github.io/portafolio-inversiones)
 - 📊 [Posit Cloud - R](https://posit.cloud/content/11711734)
 ```
