@@ -73,5 +73,5 @@
 ## 🔗 Links
 
 - 📓 [Google Colab](https://colab.research.google.com/drive/19reW6BRbSi5xSge5Om36Y47kkCSBInRC?usp=sharing)
-- 🌐 [Dashboard Interactivo](TU_USUARIO.github.io/portafolio-inversiones)
+- 🌐 [Dashboard Interactivo](https://maumg2.github.io/Proyecto-Final---Modelos---Capital-Analyst-Mauricio-MG)
 - 📊 [Posit Cloud - R](https://posit.cloud/content/11711734)
