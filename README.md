@@ -77,15 +77,4 @@
 - 📊 [Posit Cloud - R](https://posit.cloud/content/11711734)
 ```
 
-4. Click **"Commit changes"**
 
----
-
-## PASO 7 — Copiar los links para entregar
-
-Una vez terminado, tus links de entrega serán:
-```
-Repositorio:  github.com/TU_USUARIO/portafolio-inversiones
-GitHub Pages: TU_USUARIO.github.io/portafolio-inversiones
-Google Colab: (el que guardaste en Drive)
-Posit Cloud:  posit.cloud/content/11711734
