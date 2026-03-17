@@ -1,0 +1,290 @@
+---
+title: "Tarea 1 acciones Rstudio continuacion"
+output: html_document
+date: "2026-01-18"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+
+
+```{r}
+library(quantmod)
+```
+
+```{r}
+getSymbols("WMT", from = "2019-11-29" )
+```
+
+
+
+```{r}
+getSymbols("MSFT", from = "2019-11-29" )
+```
+
+
+
+```{r}
+getSymbols("NVDA", from = "2019-11-29" )
+```
+
+
+
+
+
+```{r}
+getSymbols("V", from = "2019-11-29" )
+```
+
+
+
+
+```{r}
+getSymbols("JPM", from = "2019-11-29" )
+```
+
+
+
+
+
+```{r}
+wmt_cierre <- (WMT$WMT.Close)
+```
+
+
+
+```{r}
+wmt_apertura <- (WMT$WMT.Open)
+```
+
+
+
+```{r}
+wmt_maximo <- (WMT$WMT.High)
+```
+
+
+
+```{r}
+msft_cierre <- (MSFT$MSFT.Close)
+```
+
+
+
+```{r}
+msft_apertura <- (MSFT$MSFT.Open)
+```
+
+
+
+```{r}
+msft_maximo <- (MSFT$MSFT.High)
+```
+
+
+
+```{r}
+nvda_cierre <- (NVDA$NVDA.Close)
+```
+
+
+
+```{r}
+nvda_apertura <- (NVDA$NVDA.Open)
+```
+
+
+
+
+```{r}
+nvda_maximo <- (NVDA$NVDA.High)
+```
+
+
+
+
+```{r}
+v_cierre <- (V$V.Close)
+```
+
+
+
+```{r}
+v_apertura <- (V$V.Open)
+```
+
+
+
+
+```{r}
+v_maximo <- (V$V.High)
+```
+
+
+
+
+
+```{r}
+jpm_cierre <- (JPM$JPM.Close)
+```
+
+
+
+
+
+
+```{r}
+jpm_apertura <- (JPM$JPM.Open)
+```
+
+
+
+
+
+
+```{r}
+jpm_maximo <- (JPM$JPM.High)
+```
+
+
+
+
+
+
+```{r}
+wmt_cierre <- na.omit(wmt_cierre)
+```
+
+
+
+
+```{r}
+wmt_apertura <- na.omit(wmt_apertura)
+```
+
+
+
+
+
+```{r}
+wmt_maximo <- na.omit(wmt_maximo)
+```
+
+
+
+
+```{r}
+msft_cierre <- na.omit(msft_cierre)
+```
+
+
+
+
+
+```{r}
+msft_apertura <- na.omit(msft_apertura)
+```
+
+
+
+
+```{r}
+msft_maximo <- na.omit(msft_maximo)
+```
+
+
+
+
+
+```{r}
+nvda_cierre <- na.omit(nvda_cierre)
+```
+
+
+
+
+
+```{r}
+nvda_apertura <- na.omit(nvda_apertura)
+```
+
+
+
+
+
+```{r}
+nvda_maximo <- na.omit(nvda_maximo)
+```
+
+
+
+
+
+```{r}
+v_cierre <- na.omit(v_cierre)
+```
+
+
+
+
+
+```{r}
+v_apertura <- na.omit(v_apertura)
+```
+
+
+
+
+
+```{r}
+v_maximo <- na.omit(v_maximo)
+```
+
+
+
+
+
+```{r}
+jpm_cierre <- na.omit(jpm_cierre)
+```
+
+
+
+
+
+```{r}
+jpm_apertura <- na.omit(jpm_apertura)
+```
+
+
+
+
+
+```{r}
+jpm_maximo <- na.omit(jpm_maximo)
+```
+

@@ -1,0 +1,439 @@
+---
+title: "Tarea 3 Clase Regresión Simple - Acciones y xls"
+output: html_document
+date: "2026-02-03"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+```{r}
+library(readxl)
+
+WalmartPhistory <- read_excel("WalmartPhistory.xlsx")
+AmazonPhistory  <- read_excel("AmazonPhistory.xlsx")
+```
+
+
+
+
+
+##TAREA 3 Regresión Lineal Simple
+
+A continuación realizaremos los modelos de regresión lineal simple, utilizando la información de refinitiv, con una frecuencia del precio de 1 minuto, utilizando la fecha del 29/01/26 19:46 al 2/02/26 22:28. Compararemos las acciones de WMT vs AMZN y TSLA vs F (Ford).
+
+
+
+
+
+##WMT VS AMZN
+
+
+
+
+```{r}
+datetime_wmt <- as.POSIXct(
+  WalmartPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+```
+
+
+
+```{r}
+head(datetime_wmt)
+```
+
+
+```{r}
+library(xts)
+
+wmt_close_xts <- xts(
+  WalmartPhistory$Close,
+  order.by = datetime_wmt
+)
+
+colnames(wmt_close_xts) <- "WMT.Close"
+```
+
+
+
+
+
+```{r}
+datetime_amzn <- as.POSIXct(
+  AmazonPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+```
+
+
+
+
+
+
+
+```{r}
+amzn_close_xts <- xts(
+  AmazonPhistory$Close,
+  order.by = datetime_amzn
+)
+
+colnames(amzn_close_xts) <- "AMZN.Close"
+```
+
+
+
+
+```{r}
+wmt_close_xts <- na.omit(wmt_close_xts)
+```
+
+
+
+
+```{r}
+amzn_close_xts <- na.omit(wmt_close_xts)
+```
+
+
+
+
+
+##RETURNS
+
+A continuación obtendremos los rendimientos de cada acción para poder compararlos.
+
+
+
+```{r}
+wmt_rendimientos1 <- diff(log(wmt_close_xts))
+
+```
+
+
+
+
+
+
+
+```{r}
+amzn_rendimientos1 <- diff(log(amzn_close_xts))
+```
+
+
+
+
+
+Plot- A continuación lo que haré será comparar la variable independiente amzn vs la variable dependiente wmt.(X,Y)
+
+
+
+
+```{r}
+plot(amzn_rendimientos1, wmt_rendimientos1, main = "amzn vs wmt")
+```
+
+
+Analizando el plot podemos concluir que existe una relación positiva moderada entre los rendimientos por minuto y a tres días de AMZN y WMT.
+
+
+
+
+```{r}
+modelo1 <- lm(wmt_rendimientos1 ~ amzn_rendimientos1)
+summary(modelo1)
+```
+
+##Interpretaciones
+
+Los residuales muestran diferencias extremadamente pequeñas entre los valores observados y los valores estimados por el modelo, con mínimos y máximos cercanos a cero.
+El intercepto es igual a 5.368e-21, el cual representa el rendimiento promedio por minuto de WMT cuando el rendimiento de AMZN es 0. Este valor es prácticamente cero, indicando que no existe un rendimiento base significativo cuando Amazon no presenta cambios en ese minuto.
+
+La pendiente es de 1.000000, lo que quiere decir que con un incremento de 1% en el rendimiento de AMZN, el rendimiento de WMT aumenta en promedio también 1%, mostrando que ambos activos presentan movimientos prácticamente idénticos en el periodo analizado.
+
+El valor t de 3.527e+17 nos indica que el coeficiente de AMZN es altamente significativo estadísticamente, confirmando que la relación observada no se debe al azar.
+
+El error estándar residual del modelo es 8.491e-20, indicando que la volatilidad promedio de los errores del modelo es prácticamente nula, lo que nuevamente sugiere un ajuste casi perfecto entre ambas series.
+
+La R² es igual a 1, lo que significa que el modelo explica prácticamente el 100% de la variación del rendimiento de Walmart a partir del rendimiento de Amazon. En términos prácticos, ambas series se movieron casi de forma idéntica durante el periodo analizado.
+
+Conclusión final: Existe una relación positiva y estadísticamente significativa extremadamente alta entre los rendimientos de Walmart (WMT) y Amazon (AMZN). Los resultados indican que un incremento de 1% en el rendimiento de Amazon se traduce prácticamente en un incremento equivalente en el rendimiento de Walmart durante el periodo analizado, lo que sugiere que ambas acciones se movieron casi de manera idéntica en la muestra utilizada.
+
+
+##Intervalo de confianza
+
+
+
+
+```{r}
+?lm
+names(modelo1)
+```
+
+
+
+```{r}
+confint(modelo1)
+```
+
+
+
+
+
+```{r}
+x <- as.numeric(coredata(amzn_rendimientos1))
+y <- as.numeric(coredata(wmt_rendimientos1))
+
+df <- na.omit(data.frame(amzn_rendimientos1 = x, wmt_rendimientos1 = y))
+
+modelo1 <- lm(wmt_rendimientos1 ~ amzn_rendimientos1, data = df)
+
+conf.interval <- predict(modelo1, data.frame(amzn_rendimientos1 = df$amzn_rendimientos1), interval = "confidence")
+pred.interval <- predict(modelo1, data.frame(amzn_rendimientos1 = df$amzn_rendimientos1), interval = "prediction")
+
+ord <- order(df$amzn_rendimientos1)
+
+plot(df$amzn_rendimientos1, df$wmt_rendimientos1, pch = 20, main = "WMT vs AMZN", col = "red")
+abline(modelo1, lwd = 2, col = "blue")
+matlines(df$amzn_rendimientos1[ord], conf.interval[ord,2:3], col = "black", lty = 3)
+matlines(df$amzn_rendimientos1[ord], pred.interval[ord,2:3], col = "green", lty = 3)
+
+```
+
+
+##Interpretación 
+
+El gráfico muestra una relación positiva casi perfecta entre los rendimientos por minuto de Walmart (WMT) y Amazon (AMZN), ya que los puntos se alinean prácticamente sobre la recta de regresión. Esto indica que cuando el rendimiento de AMZN sube o baja, el de WMT tiende a moverse en la misma dirección y magnitud. Por lo tanto, ambas acciones presentaron un comportamiento muy similar durante el periodo analizado. Sin embargo, un ajuste tan perfecto es poco común en mercados reales, por lo que los resultados deben interpretarse con cautela debido a la corta muestra utilizada.
+
+
+
+
+
+
+
+
+
+##TSLA VS F
+
+
+
+```{r}
+TeslaPhistory <- read_excel("TeslaPhistory.xlsx")
+FordPhistory  <- read_excel("FordPhistory.xlsx")
+```
+
+
+
+```{r}
+datetime_tsla <- as.POSIXct(
+  TeslaPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+```
+
+
+
+```{r}
+head(datetime_tsla)
+```
+
+
+```{r}
+library(xts)
+
+tsla_close_xts <- xts(
+  TeslaPhistory$Close,
+  order.by = datetime_tsla
+)
+
+colnames(tsla_close_xts) <- "TSLA.Close"
+```
+
+
+
+
+
+```{r}
+datetime_f <- as.POSIXct(
+  FordPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+```
+
+
+
+
+
+
+
+```{r}
+f_close_xts <- xts(
+  FordPhistory$Close,
+  order.by = datetime_f
+)
+
+colnames(f_close_xts) <- "F.Close"
+```
+
+
+
+
+```{r}
+tsla_close_xts <- na.omit(tsla_close_xts)
+```
+
+
+
+
+```{r}
+f_close_xts <- na.omit(f_close_xts)
+```
+
+
+
+Hacemos uso del siguiente código para quedarnos con el mismo número de datos, ya que necesitamos quedarnos solo con las fechas/horas que existen en ambas series.
+
+```{r}
+common_idx <- intersect(index(tsla_close_xts),
+                        index(f_close_xts))
+
+tsla_close_xts <- tsla_close_xts[common_idx]
+f_close_xts    <- f_close_xts[common_idx]
+```
+
+
+
+##RETURNS
+
+A continuación obtendremos los rendimientos de cada acción para poder compararlos.
+
+
+
+```{r}
+tsla_rendimientos1 <- diff(log(tsla_close_xts))
+
+```
+
+
+
+
+
+
+
+```{r}
+f_rendimientos1 <- diff(log(f_close_xts))
+```
+
+
+
+
+
+Plot- A continuación lo que haré será comparar la variable independiente f vs la variable dependiente tsla.(X,Y)
+
+
+
+
+```{r}
+plot(f_rendimientos1, tsla_rendimientos1, main = "f vs tsla")
+```
+
+
+Analizando el plot podemos concluir que existe una relación positiva moderada entre los rendimientos por minuto y a tres días de F y TSLA.
+
+
+
+
+```{r}
+modelo1 <- lm(tsla_rendimientos1 ~ f_rendimientos1)
+summary(modelo1)
+```
+
+##Interpretaciones
+
+Los residuales muestran diferencias pequeñas entre los valores observados y los estimados por el modelo, con valores mínimos y máximos relativamente cercanos a cero, lo que indica que el modelo captura parte del comportamiento de los datos, aunque aún existe variabilidad no explicada.
+
+El intercepto es igual a 2.560e-06, el cual representa el rendimiento promedio por minuto de TSLA cuando el rendimiento de Ford (F) es 0. Este valor es prácticamente cero, indicando que no existe un rendimiento base significativo de Tesla cuando Ford no presenta cambios en ese minuto.
+
+La pendiente es de 1.690e-01, lo que quiere decir que con un incremento de 1% en el rendimiento de Ford, el rendimiento de Tesla aumenta en promedio 0.169%, mostrando que ambas acciones se mueven en la misma dirección, aunque Tesla reacciona con menor magnitud.
+
+El valor t de 5.231 nos indica que el coeficiente de Ford es estadísticamente significativo, confirmando que existe una relación real entre los rendimientos de ambas acciones y no se debe al azar.
+
+El error estándar residual del modelo es 0.001135, indicando que aún existe variabilidad en los rendimientos de Tesla que no es explicada por los movimientos de Ford, por lo que el ajuste del modelo es moderado y no perfecto.
+
+La R² es 0.01729, lo que significa que el modelo solo explica alrededor del 1.7% de la variación del rendimiento de Tesla a partir del rendimiento de Ford, indicando que la mayor parte del movimiento de Tesla depende de otros factores del mercado.
+
+Conclusión final: Existe una relación positiva y estadísticamente significativa pero débil entre los rendimientos por minuto de Tesla (TSLA) y Ford (F). Un incremento de 1% en el rendimiento de Ford genera en promedio un aumento de 0.169% en Tesla; sin embargo, la baja R² muestra que la mayor parte de los movimientos de Tesla se explica por factores distintos a Ford.
+
+##Intervalo de confianza
+
+
+
+
+```{r}
+?lm
+names(modelo1)
+```
+
+
+
+```{r}
+confint(modelo1)
+```
+
+
+
+
+
+```{r}
+x <- as.numeric(coredata(f_rendimientos1))
+y <- as.numeric(coredata(tsla_rendimientos1))
+
+df <- na.omit(data.frame(f_rendimientos1 = x, tsla_rendimientos1 = y))
+
+modelo1 <- lm(tsla_rendimientos1 ~ f_rendimientos1, data = df)
+
+conf.interval <- predict(modelo1, data.frame(f_rendimientos1 = df$f_rendimientos1), interval = "confidence")
+pred.interval <- predict(modelo1, data.frame(f_rendimientos1 = df$f_rendimientos1), interval = "prediction")
+
+ord <- order(df$f_rendimientos1)
+
+plot(df$f_rendimientos1, df$tsla_rendimientos1, pch = 20, main = "TSLA vs F", col = "red")
+abline(modelo1, lwd = 2, col = "blue")
+matlines(df$f_rendimientos1[ord], conf.interval[ord,2:3], col = "black", lty = 3)
+matlines(df$f_rendimientos1[ord], pred.interval[ord,2:3], col = "green", lty = 3)
+
+```
+
+
+##Interpretación 
+
+El gráfico muestra una relación positiva pero débil entre los rendimientos por minuto de Tesla (TSLA) y Ford (F), ya que, aunque la recta de regresión presenta una ligera pendiente positiva, los puntos se encuentran bastante dispersos alrededor de ella. Esto indica que cuando el rendimiento de Ford aumenta o disminuye, el de Tesla tiende a moverse en la misma dirección, pero con mucha variabilidad. Por lo tanto, ambas acciones comparten parcialmente movimientos del mercado, aunque conservan dinámicas propias. Esto sugiere que la relación entre ambas existe, pero es moderada y está influenciada por otros factores del mercado.
+

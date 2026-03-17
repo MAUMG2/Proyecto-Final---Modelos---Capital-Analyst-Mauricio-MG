@@ -1,0 +1,341 @@
+---
+title: "Clase Introducción 14 Ene 26"
+output: html_document
+date: "2026-01-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+```{r}
+2+3
+```
+
+
+```{r}
+library(quantmod)
+```
+
+
+
+```{r}
+getSymbols("TSLA", from = "2019-11-29" )
+```
+
+
+```{r}
+getSymbols("AAPL", from = "2019-11-29" , to = "2023-11-29")
+```
+
+
+```{r}
+getSymbols("^SPX", from = "2019-11-29")
+```
+
+
+```{r}
+getSymbols("BAC", from = "2019-11-29", to = "2022-11-29")
+```
+
+
+```{r}
+getSymbols("AMZN", from = "2019-11-29", to = "2024-11-29")
+```
+
+
+```{r}
+tsla1 <- (TSLA$TSLA.Close)
+```
+
+
+```{r}
+tsla_apertura <- (TSLA$TSLA.Open)
+```
+
+
+
+
+```{r}
+amzn1 <- (AMZN$AMZN.Close)
+```
+
+
+
+```{r}
+amzn2 <- (AMZN$AMZN.Open)
+```
+
+
+```{r}
+tsla1 <- na.omit(tsla1)
+```
+
+
+```{r}
+amzn1 <- na.omit(amzn1)
+```
+
+
+```{r}
+amzn2 <- na.omit(amzn2)
+```
+
+
+## Daily returns
+Se utiliza para obtener los rendimientos diarios de una acción
+
+
+```{r}
+tsla1_returns <- dailyReturn(tsla1)
+```
+
+
+```{r}
+amzn1_returns <- dailyReturn(amzn1)
+```
+
+
+## Analizando rendimientos de las acciones
+Plot, función que grafica de manera lineal, es la base para graficar.
+Main, es el título, se pone entre comillas.
+Show in new window, lo abre en una página externa, y se puede observar de mejor manera.
+```{r}
+plot(tsla1, main = "Precios cierre TSLA")
+```
+
+
+
+
+
+
+
+```{r}
+plot(tsla1_returns, main = "Rendimientos diarios de TSLA" )
+```
+
+# Histogram
+probability-Probabilidad
+ylim-Rango en y
+
+
+
+```{r}
+hist(tsla1_returns, probability = TRUE, ylim = c(0, 10))
+```
+
+
+
+# Boxplot 
+
+
+```{r}
+boxplot(tsla1_returns, main = "Boxplot de los retornos de TSLA")
+```
+
+
+
+## cálculo de retornos anuales
+
+Nueva variable
+annualReturn
+leading-no tomar en cuenta letras, solo números con FALSE
+
+```{r}
+tsla1_returns_annual <- annualReturn(tsla1, leading = FALSE )
+```
+
+
+
+# Gráfica de barras 
+Le puedes agregar un nombre a la gráfica con el main.
+
+```{r}
+barplot(tsla1_returns_annual, main= "Rendimiento anual TSLA")
+```
+
+
+
+
+# Ejercicio de clase 
+
+Realizar todas las gráficas con AMZN
+
+Plot amzn 
+
+
+
+```{r}
+plot(amzn1, main = "Precios cierre AMZN")
+```
+
+
+
+
+# Rendimientos diarios de AMZN
+
+
+
+```{r}
+plot(amzn1_returns, main = "Rendimientos diarios de AMZN" )
+```
+
+
+
+
+# Histograma de AMZN
+
+
+```{r}
+hist(amzn1_returns, probability = TRUE, ylim = c(0, 20), main = "Histograma de los retornos de AMZN")
+```
+
+
+# boxplot AMZN
+
+
+
+```{r}
+boxplot(amzn1_returns, main = "Boxplot de los retornos de AMZN")
+```
+
+
+
+
+# Cálculo de los retornos anuales AMZN
+
+
+
+```{r}
+amzn1_returns_annual <- annualReturn(amzn1, leading = FALSE )
+```
+
+
+
+
+# Gráfica de barras rendimiento anual AMZN 
+
+
+
+```{r}
+barplot(amzn1_returns_annual, main= "Rendimiento anual AMZN")
+```
+
+
+
+## Regresión Lineal Simple
+
+
+```{r}
+library(MASS)
+library(ISLR)
+```
+
+
+# data
+
+En HELP, podemos buscar data y descargar bases de datos que tiene R históricas.
+Hay que darle doble click cuando aparezca la base de datos como valores, después la buscas en HELP y te arroja los detalles de esa base de datos.
+
+Variable dummy o dicotómica, categorizas numericamente (0 o 1)
+
+
+
+```{r}
+data(Boston)
+```
+
+
+?-HELP
+
+
+```{r}
+?Boston
+```
+
+
+Head-Para que te aparezcan el nombre de las columnas
+
+```{r}
+head(Boston, 5)
+```
+
+
+str- estructura, presenta un diagnóstico resumido 
+
+
+
+
+```{r}
+str(Boston)
+```
+
+
+
+summary- Resumen estadístico de cada variable 
+
+
+```{r}
+summary(Boston)
+```
+
+
+pairs- matriz de gráficas de dispersión
+
+
+
+```{r}
+pairs(Boston)
+```
+
+
+
+attach- Pegar la base de datos en el markdown no en variables
+
+
+
+```{r}
+attach(Boston)
+```
+
+
+
+Plot- En R el código de las variables se escribe X,Y, cuando quiero comparar una con otra. En este caso nos dio una relación negativa y convexa.
+
+```{r}
+plot(lstat, medv, main = "lstat vs medv")
+```
+
+
+# Modelo Lineal Simple
+En este caso si se escribe primero la variable dependiente y después la independiente
+Siempre hay que poner summary.
+
+
+```{r}
+modelo1 <- lm(medv ~ lstat)
+summary(modelo1)
+```
+

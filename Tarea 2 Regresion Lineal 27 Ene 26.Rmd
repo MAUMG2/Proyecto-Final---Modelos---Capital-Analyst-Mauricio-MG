@@ -1,0 +1,561 @@
+---
+title: "Clase Introducción 14 Ene 26"
+output: html_document
+date: "2026-01-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+```{r}
+2+3
+```
+
+
+```{r}
+library(quantmod)
+```
+
+
+
+```{r}
+getSymbols("TSLA", from = "2019-11-29" )
+```
+
+
+```{r}
+getSymbols("AAPL", from = "2019-11-29" , to = "2023-11-29")
+```
+
+
+```{r}
+getSymbols("^SPX", from = "2019-11-29")
+```
+
+
+```{r}
+getSymbols("BAC", from = "2019-11-29", to = "2022-11-29")
+```
+
+
+```{r}
+getSymbols("AMZN", from = "2019-11-29", to = "2024-11-29")
+```
+
+
+```{r}
+tsla1 <- (TSLA$TSLA.Close)
+```
+
+
+```{r}
+tsla_apertura <- (TSLA$TSLA.Open)
+```
+
+
+
+
+```{r}
+amzn1 <- (AMZN$AMZN.Close)
+```
+
+
+
+```{r}
+amzn2 <- (AMZN$AMZN.Open)
+```
+
+
+```{r}
+tsla1 <- na.omit(tsla1)
+```
+
+
+```{r}
+amzn1 <- na.omit(amzn1)
+```
+
+
+```{r}
+amzn2 <- na.omit(amzn2)
+```
+
+
+## Daily returns
+Se utiliza para obtener los rendimientos diarios de una acción
+
+
+```{r}
+tsla1_returns <- dailyReturn(tsla1)
+```
+
+
+```{r}
+amzn1_returns <- dailyReturn(amzn1)
+```
+
+
+## Analizando rendimientos de las acciones
+Plot, función que grafica de manera lineal, es la base para graficar.
+Main, es el título, se pone entre comillas.
+Show in new window, lo abre en una página externa, y se puede observar de mejor manera.
+```{r}
+plot(tsla1, main = "Precios cierre TSLA")
+```
+
+
+
+
+
+
+
+```{r}
+plot(tsla1_returns, main = "Rendimientos diarios de TSLA" )
+```
+
+# Histogram
+probability-Probabilidad
+ylim-Rango en y
+
+
+
+```{r}
+hist(tsla1_returns, probability = TRUE, ylim = c(0, 10))
+```
+
+
+
+# Boxplot 
+
+
+```{r}
+boxplot(tsla1_returns, main = "Boxplot de los retornos de TSLA")
+```
+
+
+
+## cálculo de retornos anuales
+
+Nueva variable
+annualReturn
+leading-no tomar en cuenta letras, solo números con FALSE
+
+```{r}
+tsla1_returns_annual <- annualReturn(tsla1, leading = FALSE )
+```
+
+
+
+# Gráfica de barras 
+Le puedes agregar un nombre a la gráfica con el main.
+
+```{r}
+barplot(tsla1_returns_annual, main= "Rendimiento anual TSLA")
+```
+
+
+
+
+# Ejercicio de clase 
+
+Realizar todas las gráficas con AMZN
+
+Plot amzn 
+
+
+
+```{r}
+plot(amzn1, main = "Precios cierre AMZN")
+```
+
+
+
+
+# Rendimientos diarios de AMZN
+
+
+
+```{r}
+plot(amzn1_returns, main = "Rendimientos diarios de AMZN" )
+```
+
+
+
+
+# Histograma de AMZN
+
+
+```{r}
+hist(amzn1_returns, probability = TRUE, ylim = c(0, 20), main = "Histograma de los retornos de AMZN")
+```
+
+
+# boxplot AMZN
+
+
+
+```{r}
+boxplot(amzn1_returns, main = "Boxplot de los retornos de AMZN")
+```
+
+
+
+
+# Cálculo de los retornos anuales AMZN
+
+
+
+```{r}
+amzn1_returns_annual <- annualReturn(amzn1, leading = FALSE )
+```
+
+
+
+
+# Gráfica de barras rendimiento anual AMZN 
+
+
+
+```{r}
+barplot(amzn1_returns_annual, main= "Rendimiento anual AMZN")
+```
+
+
+
+## Regresión Lineal Simple
+
+
+```{r}
+library(MASS)
+library(ISLR)
+```
+
+
+# data
+
+En HELP, podemos buscar data y descargar bases de datos que tiene R históricas.
+Hay que darle doble click cuando aparezca la base de datos como valores, después la buscas en HELP y te arroja los detalles de esa base de datos.
+
+Variable dummy o dicotómica, categorizas numericamente (0 o 1)
+
+
+
+```{r}
+data(Boston)
+```
+
+
+?-HELP
+
+
+```{r}
+?Boston
+```
+
+
+Head-Para que te aparezcan el nombre de las columnas
+
+```{r}
+head(Boston, 5)
+```
+
+
+str- estructura, presenta un diagnóstico resumido 
+
+
+
+
+```{r}
+str(Boston)
+```
+
+
+
+summary- Resumen estadístico de cada variable 
+
+
+```{r}
+summary(Boston)
+```
+
+
+pairs- matriz de gráficas de dispersión
+
+
+
+```{r}
+pairs(Boston)
+```
+
+
+
+attach- Pegar la base de datos en el markdown no en variables
+
+
+
+```{r}
+attach(Boston)
+```
+
+
+
+Plot- En R el código de las variables se escribe X,Y, cuando quiero comparar una con otra. En este caso nos dio una relación negativa y convexa.
+
+```{r}
+plot(lstat, medv, main = "lstat vs medv")
+```
+
+
+# Modelo Lineal Simple
+En este caso si se escribe primero la variable dependiente y después la independiente
+Siempre hay que poner summary.
+
+
+```{r}
+modelo1 <- lm(medv ~ lstat)
+summary(modelo1)
+```
+
+
+
+
+## Tarea 2 Modelos regresión lineal simples
+
+#Valor de vivienda vs contaminación ambiental
+
+Plot- A continuación lo que haré será comparar la variable independiente nox vs la variable dependiente medv.(X,Y)
+
+
+
+```{r}
+plot(nox, medv, main = "nox vs medv")
+```
+
+
+Analizando el plot podemos concluir que existe una relación negativa y convexa.
+
+
+
+#Modelo Lineal Simple
+En este caso si se escribe primero la variable dependiente (medv) y después la independiente (nox)
+Siempre hay que poner summary.
+
+
+
+
+```{r}
+modelo1 <- lm(medv ~ nox)
+summary(modelo1)
+```
+
+
+#Interpretaciones
+
+
+El intercepto es igual a 41.346 lo que quiere decir que si hipotéticamente el valor de la concentración de óxido de nitrógeno fuera 0, el valor esperado de la vivienda sería de 41,346 USD.
+
+
+La pendiente es de -33.916, lo que quiere decir que con un incremento en 1% de nox el valor mediano de la vivienda se reduce en aproximadamente 33,916 USD. Y para poder entenderlo mejor un aumento del 0.1% en nox reduce el valor de la vivienda en aproximadamente 3,392USD.
+
+El valor t de -10.61 nos indica que el coeficiente de nox es altamente significativo.
+
+Conclusión final: Existe una relación negativa, estadísticamente significativa y económicamente relevante entre la contaminación ambiental y el valor de la vivienda. Un aumento en la concentración de nox reduce de manera importante el valor de los inmuebles, confirmando que los niveles de contaminación son un factor clave en el mercado inmobiliario.
+
+
+
+#Valor de vivienda vs número de habitaciones
+
+Plot- A continuación lo que haré será comparar la variable independiente rm  vs la variable dependiente medv.(X,Y)
+
+
+```{r}
+plot(rm, medv, main = "rm vs medv")
+```
+
+
+
+Analizando el plot podemos concluir que existe una relación positiva y aproximadamente lineal.
+
+
+#Modelo Lineal Simple
+En este caso si se escribe primero la variable dependiente (medv) y después la independiente (rm)
+Siempre hay que poner summary.
+
+
+```{r}
+modelo1 <- lm(medv ~ rm)
+summary(modelo1)
+```
+
+
+
+#Interpretaciones
+
+
+El intercepto es igual a -34.671 el cual no tiene una interpretación económica realista, por que una casa nunca va a tener 0 habitaciones.
+
+La pendiente es de 9.102, lo que quiere decir que con un incremento en 1% de rm, en este caso un aumento de una habitación el valor mediano de la vivienda aumenta aproximadamente 9,102 USD. 
+
+El valor  t de 21.72 nos indica que el coeficiente de rm es altamente significativo.
+
+Conclusión final: Existe una relación positiva, fuerte y estadísticamente significativa entre el número promedio de habitaciones por vivienda y el valor mediano de las casas. Un incremento de una habitación aumenta en promedio el valor de la vivienda en aproximadamente $9,102 dólares, confirmando que el número de habitaciones es un factor clave en el mercado inmobiliario.
+
+
+
+#WMT VS AMZN 
+
+
+A continuación compararemos los rendimientos de las acciones de WMT VS AMZN las cuales son dos empresas de comercio minorista y consumo. Con la ayuda de getsymbols, obtendremos las bases de datos, y haremos uso de na.omit para tener el mismo número de observaciones, las fechas que se utilizarán en ambas será del 03 de enero del 2022 al día 27 de enero del 2026.
+
+
+
+
+
+```{r}
+getSymbols("WMT", from = "2022-01-03" )
+```
+
+
+
+
+```{r}
+getSymbols("AMZN", from = "2022-01-03")
+```
+
+
+
+
+
+```{r}
+wmt_cierre1 <- (WMT$WMT.Close)
+```
+
+
+
+
+
+```{r}
+wmt_apertura1 <- (WMT$WMT.Open)
+```
+
+
+
+
+
+```{r}
+amzn_cierre1 <- (AMZN$AMZN.Close)
+```
+
+
+
+
+```{r}
+amzn_apertura1 <- (AMZN$AMZN.Open)
+```
+
+
+
+```{r}
+wmt_cierre1 <- na.omit(wmt_cierre1)
+```
+
+
+
+```{r}
+wmt_apertura1 <- na.omit(wmt_apertura1)
+```
+
+
+
+
+```{r}
+amzn_cierre1 <- na.omit(amzn_cierre1)
+```
+
+
+
+
+```{r}
+amzn_apertura1 <- na.omit(amzn_apertura1)
+```
+
+
+
+#Daily Returns
+
+Ahora obtendremos los rendimietnos diarios de cada acción para poder compararlos.
+
+
+
+
+```{r}
+wmt_returns1 <- dailyReturn(wmt_cierre1)
+```
+
+
+
+```{r}
+amzn_returns1 <- dailyReturn(amzn_cierre1)
+```
+
+
+
+
+
+Plot- A continuación lo que haré será comparar la variable independiente amzn vs la variable dependiente wmt.(X,Y)
+
+
+
+
+```{r}
+plot(amzn_returns1, wmt_returns1, main = "amzn vs wmt")
+
+```
+
+Analizando el plot podemos concluir que existe una relación positiva moderada entre los rendimientos de AMZN y WMT.
+
+
+
+
+
+```{r}
+modelo1 <- lm(wmt_returns1 ~ amzn_returns1)
+summary(modelo1)
+```
+
+
+
+
+#Interpretaciones
+
+
+El intercepto es igual a  0.0008696 el cual respresenta el rendimiento promedio diario de WMT cuando el rendimiento de AMZN es 0.
+
+La pendiente es de 0.1488429 , lo que quiere decir que con un incremento en 1% de AMZN, en este caso un aumento deL rendimiento de la acción, el rendimiento de WMT aumenta en promedio 0.1488%.
+
+El valor t de 8.404 nos indica que el coeficiente de AMZN es altamente significativo.
+
+Conclusión final: Existe una relación positiva y estadísticamente significativa pero moderada entre los rendimientos diarios de Walmart (WMT) y Amazon (AMZN). Los resultados indican que un incremento de 1% en el rendimiento de Amazon aumenta en promedio 0.15%  el rendimiento de Walmart.

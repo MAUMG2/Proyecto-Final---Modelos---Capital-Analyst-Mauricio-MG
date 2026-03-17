@@ -1,0 +1,1556 @@
+---
+title: "Clase Introducción 14 Ene 26"
+output: html_document
+date: "2026-01-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+```{r}
+2+3
+```
+
+
+```{r}
+library(quantmod)
+```
+
+
+
+```{r}
+getSymbols("TSLA", from = "2019-11-29" )
+```
+
+
+```{r}
+getSymbols("AAPL", from = "2019-11-29" , to = "2023-11-29")
+```
+
+
+```{r}
+getSymbols("^SPX", from = "2019-11-29")
+```
+
+
+```{r}
+getSymbols("BAC", from = "2019-11-29", to = "2022-11-29")
+```
+
+
+```{r}
+getSymbols("AMZN", from = "2019-11-29", to = "2024-11-29")
+```
+
+
+```{r}
+tsla1 <- (TSLA$TSLA.Close)
+```
+
+
+```{r}
+tsla_apertura <- (TSLA$TSLA.Open)
+```
+
+
+
+
+```{r}
+amzn1 <- (AMZN$AMZN.Close)
+```
+
+
+
+```{r}
+amzn2 <- (AMZN$AMZN.Open)
+```
+
+
+```{r}
+tsla1 <- na.omit(tsla1)
+```
+
+
+```{r}
+amzn1 <- na.omit(amzn1)
+```
+
+
+```{r}
+amzn2 <- na.omit(amzn2)
+```
+
+
+## Daily returns
+Se utiliza para obtener los rendimientos diarios de una acción
+
+
+```{r}
+tsla1_returns <- dailyReturn(tsla1)
+```
+
+
+```{r}
+amzn1_returns <- dailyReturn(amzn1)
+```
+
+
+## Analizando rendimientos de las acciones
+Plot, función que grafica de manera lineal, es la base para graficar.
+Main, es el título, se pone entre comillas.
+Show in new window, lo abre en una página externa, y se puede observar de mejor manera.
+```{r}
+plot(tsla1, main = "Precios cierre TSLA")
+```
+
+
+
+
+
+
+
+```{r}
+plot(tsla1_returns, main = "Rendimientos diarios de TSLA" )
+```
+
+# Histogram
+probability-Probabilidad
+ylim-Rango en y
+
+
+
+```{r}
+hist(tsla1_returns, probability = TRUE, ylim = c(0, 10))
+```
+
+
+
+# Boxplot 
+
+
+```{r}
+boxplot(tsla1_returns, main = "Boxplot de los retornos de TSLA")
+```
+
+
+
+## cálculo de retornos anuales
+
+Nueva variable
+annualReturn
+leading-no tomar en cuenta letras, solo números con FALSE
+
+```{r}
+tsla1_returns_annual <- annualReturn(tsla1, leading = FALSE )
+```
+
+
+
+# Gráfica de barras 
+Le puedes agregar un nombre a la gráfica con el main.
+
+```{r}
+barplot(tsla1_returns_annual, main= "Rendimiento anual TSLA")
+```
+
+
+
+
+# Ejercicio de clase 
+
+Realizar todas las gráficas con AMZN
+
+Plot amzn 
+
+
+
+```{r}
+plot(amzn1, main = "Precios cierre AMZN")
+```
+
+
+
+
+# Rendimientos diarios de AMZN
+
+
+
+```{r}
+plot(amzn1_returns, main = "Rendimientos diarios de AMZN" )
+```
+
+
+
+
+# Histograma de AMZN
+
+
+```{r}
+hist(amzn1_returns, probability = TRUE, ylim = c(0, 20), main = "Histograma de los retornos de AMZN")
+```
+
+
+# boxplot AMZN
+
+
+
+```{r}
+boxplot(amzn1_returns, main = "Boxplot de los retornos de AMZN")
+```
+
+
+
+
+# Cálculo de los retornos anuales AMZN
+
+
+
+```{r}
+amzn1_returns_annual <- annualReturn(amzn1, leading = FALSE )
+```
+
+
+
+
+# Gráfica de barras rendimiento anual AMZN 
+
+
+
+```{r}
+barplot(amzn1_returns_annual, main= "Rendimiento anual AMZN")
+```
+
+
+
+## Regresión Lineal Simple
+
+
+```{r}
+library(MASS)
+library(ISLR)
+```
+
+
+# data
+
+En HELP, podemos buscar data y descargar bases de datos que tiene R históricas.
+Hay que darle doble click cuando aparezca la base de datos como valores, después la buscas en HELP y te arroja los detalles de esa base de datos.
+
+Variable dummy o dicotómica, categorizas numericamente (0 o 1)
+
+
+
+```{r}
+data(Boston)
+```
+
+
+?-HELP
+
+
+```{r}
+?Boston
+```
+
+
+Head-Para que te aparezcan el nombre de las columnas
+
+```{r}
+head(Boston, 5)
+```
+
+
+str- estructura, presenta un diagnóstico resumido 
+
+
+
+
+```{r}
+str(Boston)
+```
+
+
+
+summary- Resumen estadístico de cada variable 
+
+
+```{r}
+summary(Boston)
+```
+
+
+pairs- matriz de gráficas de dispersión
+
+
+
+```{r}
+pairs(Boston)
+```
+
+
+
+attach- Pegar la base de datos en el markdown no en variables
+
+
+
+```{r}
+attach(Boston)
+```
+
+
+
+Plot- En R el código de las variables se escribe X,Y, cuando quiero comparar una con otra. En este caso nos dio una relación negativa y convexa.
+
+```{r}
+plot(lstat, medv, main = "lstat vs medv")
+```
+
+
+# Modelo Lineal Simple
+En este caso si se escribe primero la variable dependiente y después la independiente
+Siempre hay que poner summary, para que te muestre el resultado de esa variable o sea del modelo, etiquetado como variable.
+
+
+```{r}
+modelo1 <- lm(medv ~ lstat)
+summary(modelo1)
+```
+
+
+
+
+
+##Interpretaciones
+
+Residuales:Observaciones más altas, más bajas con respecto al Beta 1.
+
+Coeficientes: 
+Intercepto: Beta 0, donde empieza la línea recta, 
+Error estándar: Cuanto varían las observaciones con respecto al valor. Conviene cuando se aproxime a 0, pero no conviene que sea 0. Entre más perfecto sea el modelo, genera dudas en la vida real.
+
+t value: Significancia del coeficiente, si tiene incidencia ese beta 0 sobre la variable dependiente. De preferencia arriba de 3. Buscar los tres asteriscos siempre (99%)
+
+
+Estimate (lstat): Cuando cambia 1% en X, cuanto cambia Y. Cuanto se mueve y cuando x se mueve una unidad.
+
+Error estándar residual: Tiene que ver con el modelo completo. Nos indica que el promedio de la volatilidad es de 6216 USD.
+
+
+R cuadrada múltiple: Coeficiente de determinación, nos explica de manera global que tanto explican las variables independientes a la dependiente. 
+
+
+##Intervalo de confianza
+
+Graficar el intervalo de los modelos
+
+
+
+```{r}
+?lm
+names(modelo1)
+```
+
+
+
+
+
+```{r}
+confint(modelo1)
+```
+
+
+
+
+
+
+
+
+```{r}
+conf.interval <- predict(modelo1, data.frame(lstat = Boston[, 13]), interval = "confidence")
+pred.interval <- predict(modelo1, data.frame(lstat = Boston[, 13]), interval = "prediction")
+
+plot(lstat, medv, pch = 20, main = "medv vs. lstat", col = "red")
+abline(modelo1, lwd = 2, col = "blue")
+matlines(lstat, conf.interval[,2:3], col = "black", lty = 3)
+matlines(lstat, pred.interval[,2:3], col = "green", lty = 3)
+```
+
+
+
+
+
+
+##Regresión lineal múltiple
+
+
+Con el . invocas todas las variables de la matriz de la variable de Boston
+
+```{r}
+modelo20 <- lm(medv ~ . , data = Boston)
+summary(modelo20)
+```
+
+
+
+
+# Interpretaciones
+
+
+
+El modelo estima el valor medio de las viviendas (medv) usando variables relacionadas con características socioeconómicas, ambientales y de localización en Boston.
+
+El R² del modelo es 0.7406, lo que significa que aproximadamente 74% de la variación en los precios de vivienda es explicada por las variables incluidas, indicando un buen ajuste para un modelo económico real.
+
+El modelo es globalmente significativo, ya que el p-value del estadístico F es prácticamente cero, lo que indica que, en conjunto, las variables explican de forma significativa el precio de las viviendas.
+
+Entre los resultados más importantes se observa que:
+
+La variable crim tiene coeficiente negativo y significativo, indicando que a mayor criminalidad en la zona, menor es el valor de las viviendas.
+
+La variable zn tiene efecto positivo, lo que sugiere que zonas con mayor proporción de terrenos residenciales tienden a tener viviendas de mayor valor.
+
+La variable chas es positiva y significativa, indicando que las viviendas cercanas al río Charles tienden a tener precios más altos.
+
+La variable nox presenta efecto negativo, lo que indica que mayor contaminación reduce el valor de las casas.
+
+El número promedio de habitaciones (rm) tiene un impacto positivo fuerte y significativo, mostrando que casas más grandes valen más, siendo una de las variables más influyentes.
+
+La distancia a centros de empleo (dis) tiene efecto negativo, lo que implica que ubicaciones más alejadas reducen el valor de las viviendas.
+
+Variables relacionadas con impuestos y accesibilidad (tax, rad, ptratio) muestran impactos negativos, sugiriendo que mayores cargas fiscales o peores condiciones educativas reducen precios.
+
+La variable lstat, que mide población de bajo estatus socioeconómico, tiene un efecto negativo muy fuerte, mostrando que zonas con mayor proporción de población de bajos ingresos presentan viviendas de menor valor.
+
+En contraste, la variable age no resulta significativa, indicando que la antigüedad promedio de las viviendas no influye claramente en el precio cuando se consideran las demás variables.
+
+
+
+# Conclusión
+
+El modelo confirma que factores como tamaño de vivienda, calidad del entorno, contaminación, condiciones sociales y ubicación económica son determinantes clave en el precio de las casas, mientras que la edad de las viviendas no parece tener un impacto relevante una vez controladas las demás variables.
+
+
+
+
+
+```{r}
+modelo21 <- lm(medv ~ . - age - indus , data = Boston)
+summary(modelo21)
+```
+
+#Modelo 1 actividad de clase con interpretación
+
+A continuación lo que hice fue obtener el modelo sin las variables positivas o que aumentaban el valor de las casas en el modelo original. En este caso lo que me puedo dar cuenta es que en un inicio la variable de impuestos tenía un signo negativo, sin embargo al correr este modelo, ahora el signo es positivo sin embargo no es significativa. Y la R2 disminuyo de 0.74 a 0.65.
+
+
+
+
+```{r}
+modelo22 <- lm(medv ~ . - black - rm - rad - chas - zn - age - indus , data = Boston)
+summary(modelo22)
+```
+
+
+#Modelo 2 actividad de clase con interpretación
+
+A continuación lo que hice fue correr un modelo con 5 variables sginificativas (con 3 asteriscos), sin embargo ya al correr el modelo, la R2 bajo de 0.74 a 0.60, lo que quiere decir que el mejor modelo es el que incluye todas las variables.
+
+
+
+
+```{r}
+modelo23 <- lm(medv ~ black + zn + rm + rad + ptratio , data = Boston)
+summary(modelo23)
+```
+
+## Problemas del modelo de Regresión (Boston)
+
+# Detección de Multicolinealidad 
+
+
+#Correlación
+
+
+```{r}
+cor(Boston)
+```
+
+
+
+
+# Interpretaciones
+
+La matriz de correlación muestra qué variables están más relacionadas con el precio de las viviendas (medv). Se observa que el número de habitaciones (rm) tiene una relación positiva con el precio, es decir, casas más grandes suelen valer más. En cambio, la variable lstat, que representa población de bajo nivel socioeconómico, presenta una relación negativa fuerte, indicando que en zonas con menor nivel socioeconómico los precios tienden a ser menores.
+
+También se observa que variables asociadas con contaminación, impuestos, criminalidad y condiciones educativas presentan relaciones negativas con el precio de las viviendas.
+
+Finalmente, algunas variables explicativas muestran correlaciones altas entre sí, lo que indica que ciertos factores económicos y urbanos están relacionados y pueden influir conjuntamente en los resultados del modelo.
+
+```{r}
+correlacion_boston <- cor(Boston)
+```
+
+
+
+```{r}
+library(ggcorrplot)
+```
+
+
+
+
+```{r}
+ggcorrplot(correlacion_boston)
+```
+
+
+#VIF
+
+```{r}
+library(car)
+vif(modelo20)
+```
+# Interpretaciones
+
+En este modelo, la mayoría de las variables presentan valores VIF bajos o moderados, por lo que no se observa un problema grave de multicolinealidad. Sin embargo, variables como tax y rad presentan valores más elevados, indicando que están relativamente correlacionadas con otras variables del modelo.
+
+En general, el modelo no muestra problemas severos de colinealidad, por lo que las estimaciones pueden considerarse estables y confiables.
+
+
+
+
+## ACCIONES
+
+Todo lo que sea actividad, utilizamos getSymbols, si es tarea Refinitiv o Bloomberg.
+
+
+## Regresión lineal múltiple con getsymbols
+
+
+
+```{r}
+library(quantmod)
+getSymbols("AAPL",  from = "2023-01-01")
+getSymbols("JPM",  from = "2023-01-01")
+getSymbols("XOM",  from = "2023-01-01")
+getSymbols("UNH",  from = "2023-01-01")
+getSymbols("PG",   from = "2023-01-01")
+getSymbols("CAT",  from = "2023-01-01")
+getSymbols("WMT",  from = "2023-01-01")
+getSymbols("HD",   from = "2023-01-01")
+getSymbols("COST", from = "2023-01-01")
+```
+
+
+
+```{r}
+aapl1 <- (AAPL$AAPL.Close)
+jpm1  <- (JPM$JPM.Close)
+xom1  <- (XOM$XOM.Close)
+unh1  <- (UNH$UNH.Close)
+pg1   <- (PG$PG.Close)
+cat1  <- (CAT$CAT.Close)
+wmt1  <- (WMT$WMT.Close)
+hd1   <- (HD$HD.Close)
+cost1 <- (COST$COST.Close)
+```
+
+
+
+```{r}
+aapl1 <- na.omit(aapl1)
+jpm1  <- na.omit(jpm1)
+xom1  <- na.omit(xom1)
+unh1  <- na.omit(unh1)
+pg1   <- na.omit(pg1)
+cat1  <- na.omit(cat1)
+wmt1  <- na.omit(wmt1)
+hd1   <- na.omit(hd1)
+cost1 <- na.omit(cost1)
+```
+
+
+
+
+```{r}
+sapply(list(
+  AAPL=aapl1,
+  JPM=jpm1,
+  XOM=xom1,
+  UNH=unh1,
+  PG=pg1,
+  CAT=cat1,
+  WMT=wmt1,
+  HD=hd1,
+  COST=cost1
+), NROW)
+```
+
+
+
+
+
+
+## Daily returns
+
+Se utiliza para obtener los rendimientos diarios de una acción.
+
+
+
+
+
+
+```{r}
+aapl1_rendimientos  <- dailyReturn(aapl1)
+jpm1_rendimientos  <- dailyReturn(jpm1)
+xom1_rendimientos  <- dailyReturn(xom1)
+unh1_rendimientos  <- dailyReturn(unh1)
+pg1_rendimientos   <- dailyReturn(pg1)
+cat1_rendimientos  <- dailyReturn(cat1)
+wmt1_rendimientos  <- dailyReturn(wmt1)
+hd1_rendimientos   <- dailyReturn(hd1)
+cost1_rendimientos <- dailyReturn(cost1)
+```
+
+
+
+
+
+```{r}
+aapl1_rendimientos  <- na.omit(aapl1_rendimientos)
+jpm1_rendimientos  <- na.omit(jpm1_rendimientos)
+xom1_rendimientos  <- na.omit(xom1_rendimientos)
+unh1_rendimientos  <- na.omit(unh1_rendimientos)
+pg1_rendimientos   <- na.omit(pg1_rendimientos)
+cat1_rendimientos  <- na.omit(cat1_rendimientos)
+wmt1_rendimientos  <- na.omit(wmt1_rendimientos)
+hd1_rendimientos   <- na.omit(hd1_rendimientos)
+cost1_rendimientos <- na.omit(cost1_rendimientos)
+```
+
+
+## Modelo Regresión lineal Múltiple getSymbols
+
+Para poder usar el código lm, debemos tener todas nuestros datos en una sola base de datos, la cual nombraremos PortafoliogetS.
+
+
+
+
+```{r}
+PortafoliogetS <- data.frame(
+  AAPL  = as.numeric(aapl1_rendimientos),
+  JPM  = as.numeric(jpm1_rendimientos),
+  XOM  = as.numeric(xom1_rendimientos),
+  UNH  = as.numeric(unh1_rendimientos),
+  PG   = as.numeric(pg1_rendimientos),
+  CAT  = as.numeric(cat1_rendimientos),
+  WMT  = as.numeric(wmt1_rendimientos),
+  HD   = as.numeric(hd1_rendimientos),
+  COST = as.numeric(cost1_rendimientos)
+)
+```
+
+
+
+
+## Primer modelo 
+
+A continuación, ahora si realizaremos el modelo.
+
+
+```{r}
+modelo50 <- lm(AAPL ~ . , data = PortafoliogetS)
+summary(modelo50)
+```
+
+
+# Interpretaciones
+
+Los residuales muestran errores moderados entre los rendimientos observados y estimados de AAPL, con valores entre -0.061 y 0.095, indicando que el modelo captura parte del comportamiento del activo, aunque aún existe volatilidad no explicada.
+
+El intercepto es 0.000288 y no es estadísticamente significativo, lo que indica que no existe un rendimiento base relevante cuando el resto de las acciones no presentan cambios.
+
+Las acciones con mayor influencia significativa sobre AAPL son COST (0.2517), CAT (0.1448), HD (0.1779) y JPM (0.1181), mostrando que cuando estas acciones suben 1%, AAPL tiende a moverse en la misma dirección. En cambio, XOM, UNH, PG y WMT no resultan significativas en el modelo.
+
+El modelo presenta un R² de 0.2316, lo que indica que alrededor del 23% de la variación de AAPL es explicada por las acciones incluidas, resultado razonable en mercados financieros.
+
+# Conclusión
+El comportamiento de AAPL está más relacionado con empresas ligadas al consumo y actividad económica como COST, HD y CAT, por lo que estos activos podrían ser atractivos para complementar en el portafolio en el simulador.
+
+
+
+
+## Segundo modelo 
+
+
+A continuación realizaré un segundo modelo, utilizando las variables que resultaron significativas en el primero modelo (JPM, HD, COST, CAT)
+
+
+
+
+```{r}
+modelo51 <- lm(AAPL ~ JPM + HD + COST + CAT , data = PortafoliogetS)
+summary(modelo51)
+```
+
+
+
+
+# Interpretaciones 
+
+
+Los residuales del modelo presentan valores entre -0.064 y 0.099, indicando que el modelo logra explicar parte del comportamiento de AAPL aunque aún existe variabilidad propia del mercado que no se captura completamente.
+
+El intercepto es 0.000365 y no resulta estadísticamente significativo, por lo que no existe un rendimiento base relevante cuando las demás acciones no presentan movimientos.
+
+Todas las variables incluidas son estadísticamente significativas. COST presenta la mayor influencia (0.290), seguida por HD (0.189), CAT (0.148) y JPM (0.126), indicando que cuando estas acciones suben 1%, AAPL tiende a aumentar en proporción similar durante el periodo analizado.
+
+El modelo presenta un R² de 0.225, por lo que alrededor del 22% de la variación en los rendimientos de AAPL es explicada por estas acciones, un resultado razonable para datos financieros.
+
+# Conclusión
+
+
+El rendimiento de AAPL se encuentra principalmente relacionado con empresas ligadas al consumo y actividad económica como COST, HD y CAT, además del sector financiero representado por JPM, por lo que estas acciones pueden considerarse buenas candidatas para complementar el portafolio de inversión.
+
+
+## Tercer modelo 
+
+
+A continuación realizaré un tercer modelo, utilizando las siguientes variables (JPM, HD, COST)
+
+
+
+
+```{r}
+modelo52 <- lm(AAPL ~ JPM + HD + COST , data = PortafoliogetS)
+summary(modelo52)
+```
+
+
+
+
+# Interpretaciones 
+
+
+Los residuales del modelo presentan valores entre -0.068 y 0.104, indicando que el modelo logra explicar parte del comportamiento de AAPL, aunque aún existe variabilidad propia del mercado que no se captura completamente, lo cual es normal en rendimientos financieros.
+
+El intercepto es 0.000451 y no resulta estadísticamente significativo, por lo que no existe un rendimiento base relevante cuando las demás acciones no presentan movimientos.
+
+Todas las variables incluidas son estadísticamente significativas. COST presenta la mayor influencia (0.267), seguida por HD (0.235) y JPM (0.222), indicando que cuando estas acciones incrementan su rendimiento en 1%, AAPL tiende a aumentar en una proporción similar durante el periodo analizado.
+
+El modelo presenta un R² de 0.199, por lo que alrededor del 20% de la variación en los rendimientos de AAPL es explicada por estas acciones, un resultado razonable considerando la volatilidad inherente a los mercados financieros.
+
+# Conclusión
+
+
+El rendimiento de AAPL se encuentra principalmente relacionado con empresas vinculadas al consumo y actividad económica como COST y HD, así como con el sector financiero representado por JPM, por lo que estas acciones pueden considerarse componentes relevantes para analizar el comportamiento conjunto dentro de un portafolio de inversión.
+
+## Problemas del modelo de Regresión (PortafoliogetS)
+
+# Detección de Multicolinealidad 
+
+
+#Correlación
+
+
+
+
+
+
+
+```{r}
+cor(PortafoliogetS)
+```
+
+
+
+# Interpretaciones
+
+La correlación muestra que AAPL presenta relaciones positivas moderadas con la mayoría de las acciones del portafolio, destacando HD (0.346), COST (0.345) y CAT (0.328), lo que indica que cuando estas empresas suben, Apple tiende a moverse en la misma dirección. Esto coincide con el resultado de la regresión, donde estas acciones también resultaron significativas.
+
+Las correlaciones entre AAPL y acciones defensivas como PG (0.147) y UNH (0.008) son bajas, lo que sugiere que estos activos se mueven de forma más independiente respecto a Apple, aportando potencial diversificación.
+
+Entre las acciones del portafolio, destacan correlaciones relativamente altas como JPM–CAT (0.508) y WMT–COST (0.538), lo que indica que algunas empresas del mismo tipo de actividad económica tienden a moverse juntas.
+
+# Conclusión
+
+Apple se relaciona más con empresas ligadas al consumo y actividad económica como HD, COST y CAT, mientras que sectores defensivos presentan menor relación, lo cual puede ayudar a balancear el portafolio y hacerlo diversificado.
+
+
+
+
+```{r}
+correlacion_portafoliogetS <- cor(PortafoliogetS)
+```
+
+
+
+
+
+```{r}
+ggcorrplot(correlacion_portafoliogetS)
+```
+
+
+
+
+## VIF modelo uno
+
+```{r}
+vif(modelo50)
+```
+
+
+
+# Interpretaciones
+
+
+Los valores de VIF se encuentran entre 1.02 y 1.55, lo cual indica que no existe multicolinealidad relevante entre las variables del portafolio. Esto significa que cada acción aporta información distinta para explicar el comportamiento de AAPL y que el modelo es estadísticamente estable.
+
+
+
+
+## VIF modelo dos
+
+```{r}
+vif(modelo51)
+```
+
+
+# Interpretaciones
+
+Analizando el VIF del modelo de solo las variables significativas, se acerca aún más a 1, lo que quiere decir que no existe multicolinealidad y es más acertado.
+
+
+
+## VIF modelo tres
+
+```{r}
+vif(modelo52)
+```
+
+
+# Interpretaciones
+
+Todos los valores de VIF se encuentran muy cercanos a 1 y muy por debajo del umbral común de preocupación, lo que indica que no existe multicolinealidad significativa entre las variables explicativas.
+
+Por lo tanto, las variables incluidas en el modelo aportan información distinta y no presentan problemas de redundancia estadística que afecten la estabilidad de los coeficientes estimados.
+
+
+
+
+
+
+## Pruebas de Heterosedasticidad BOSTON
+
+
+```{r}
+residuales_modelo21 <- modelo21$residuals
+```
+
+
+
+
+```{r}
+observaciones_modelo21 <- c(1:506)
+```
+
+
+
+
+```{r}
+plot(observaciones_modelo21, residuales_modelo21, type = "l")
+```
+
+
+
+
+# Interpretaciones
+
+El gráfico muestra los residuos del modelo a lo largo de las observaciones, lo que permite evaluar si la varianza de los errores se mantiene constante.
+
+Se observa que, en gran parte de la muestra, los residuos oscilan alrededor de cero sin un patrón claro; sin embargo, en ciertos tramos, especialmente alrededor de las observaciones cercanas a la 370–400, la dispersión aumenta considerablemente, presentándose valores extremos tanto positivos como negativos.
+
+Esto sugiere que la varianza de los residuos no es completamente constante a lo largo del tiempo, lo cual es un indicio de posible heterocedasticidad. En particular, la presencia de picos y mayor volatilidad en ciertas secciones indica que el error del modelo cambia dependiendo del periodo observado.
+
+Por lo tanto, el modelo podría presentar heterocedasticidad parcial, y sería recomendable confirmarlo mediante una prueba formal como Breusch-Pagan o White, y en caso necesario utilizar errores estándar robustos para obtener inferencias más confiables.
+
+
+
+
+
+
+
+
+```{r}
+cuadres_modelo21 <- residuales_modelo21^2
+```
+
+
+
+
+```{r}
+plot(cuadres_modelo21, Boston$medv)
+```
+
+
+# Interpretaciones
+
+
+
+El gráfico muestra la relación entre la variable dependiente (valor medio de viviendas, medv) y la variable explicativa utilizada en el modelo. Se observa que, para valores pequeños de la variable explicativa, la dispersión de los valores de medv es bastante amplia, mientras que para valores mayores la variabilidad cambia y aparecen algunos valores extremos.
+
+Este patrón indica que la dispersión de los errores no es uniforme a lo largo de todas las observaciones, lo cual sugiere la presencia de heterocedasticidad, ya que la variabilidad del valor de las viviendas depende del nivel de la variable explicativa.
+
+Por ello, el modelo podría no cumplir completamente el supuesto de varianza constante de los errores, por lo que sería conveniente confirmar el resultado mediante una prueba formal y considerar el uso de errores robustos en la estimación.
+
+
+
+```{r}
+library(lmtest)
+bptest(modelo21)
+```
+
+
+
+
+```{r}
+library(lmtest)
+gqtest(modelo21, order.by = ~ medv, data=Boston)
+```
+
+
+# Interpretaciones
+
+Se rechaza la hipótesis nula con un BP= +2 y un p-value que se aproxime a 0.
+
+Prueba Breusch–Pagan
+
+La prueba Breusch–Pagan arroja un p-value de 9.647e-09, valor extremadamente pequeño y menor a 0.05, por lo que se rechaza la hipótesis nula de homocedasticidad. Esto indica que la varianza de los errores no es constante y que el modelo presenta heterocedasticidad.
+
+Prueba Goldfeld–Quandt
+
+En la prueba Goldfeld–Quandt se obtiene un p-value menor a 2.2e-16, igualmente inferior a 0.05, por lo que también se rechaza la hipótesis nula de varianza constante. Además, la prueba indica que la varianza de los errores aumenta entre los segmentos analizados, confirmando la presencia de heterocedasticidad.
+
+
+
+
+## Correción de Heterosedasticidad
+# Generalized least squares (mínimos cuadrados)
+
+
+```{r}
+Boston_log <- Boston
+Boston_log[] <- lapply(Boston_log, function(x) {if(is.numeric(x)) {if(any(x <= 0)) log(x + 1) else log(x)} else {x}})
+varfunc.ols <- lm(log(residuales_modelo21^2 + 0.00001) ~ . -age -indus, data = Boston_log)
+h_techo <- exp(varfunc.ols$fitted.values)
+modelo_gls <- lm(log(medv) ~ . -age -indus, data = Boston_log, weights = 1/h_techo)
+summary(modelo_gls)
+```
+
+
+
+# Interpretaciones
+
+Después de detectar heterocedasticidad en el modelo original, se aplicó una estimación por mínimos cuadrados generalizados (GLS) mediante ponderaciones que corrigen la varianza no constante de los errores.
+
+Los resultados muestran que el modelo corregido mantiene un buen ajuste, con un R² ajustado de 0.7135, indicando que aproximadamente el 71% de la variación en el valor de las viviendas es explicada por las variables incluidas en el modelo. Además, el estadístico F presenta un p-value menor a 2.2e-16, lo que confirma que el modelo es globalmente significativo.
+
+Tras la corrección, variables como número de habitaciones (rm), niveles de contaminación (nox), distancia a centros laborales (dis), tasa de impuestos (tax), proporción alumno-profesor (ptratio) y porcentaje de población de bajo estatus (lstat) continúan siendo altamente significativas, lo que indica que estos factores siguen siendo determinantes en el precio de las viviendas.
+
+En conclusión, la aplicación de GLS permite obtener estimaciones más confiables al corregir la heterocedasticidad detectada en el modelo original, mejorando la validez de las inferencias estadísticas.
+
+Para una mayor certeza debemos realizar laspruebas BP Y GQ para confirmar
+
+
+
+
+
+# Hacer pruebas BP Y GQ 
+
+Hay que analizar este modelo para ver si no tiene HETERO
+
+
+```{r}
+bptest(modelo_gls)
+gqtest(modelo_gls)
+```
+
+
+
+#Interpretaciones
+
+Después de aplicar la corrección mediante mínimos cuadrados generalizados (GLS), se vuelven a realizar las pruebas de heterocedasticidad para verificar si el problema fue solucionado.
+
+En la prueba Breusch–Pagan, se obtiene un p-value de 0.3916, valor mayor a 0.05, por lo que no se rechaza la hipótesis nula de homocedasticidad. Esto indica que, tras la corrección, la varianza de los errores puede considerarse constante.
+
+Sin embargo, la prueba Goldfeld–Quandt arroja un p-value menor a 2.2e-16, lo que indica nuevamente evidencia de que la varianza cambia entre segmentos de la muestra, sugiriendo aún presencia de heterocedasticidad en ciertas partes de los datos.
+
+En conclusión, aunque la corrección aplicada reduce significativamente el problema de heterocedasticidad según la prueba Breusch–Pagan, la prueba Goldfeld–Quandt muestra que aún puede existir variación en la varianza en algunos segmentos, por lo que la mejora es parcial aunque el modelo resulta más estable que el original.
+
+
+
+
+# Graficar para observar si se perdió la heterocedasticidad
+
+
+```{r}
+plot(modelo_gls$fitted.values, residuals(modelo_gls),
+     main = "Residuales vs Ajustados (GLS)",
+     xlab = "Valores Predichos",
+     ylab = "Residuales",
+     col = "blue", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+```{r}
+plot(residuals(modelo_gls),
+     main = "Residuales vs Orden de Datos",
+     xlab = "Índice (Fila)",
+     ylab = "Residuales",
+     col = "darkgreen", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+# Interpretaciones
+
+En la gráfica de residuos contra valores ajustados se observa que los residuos se distribuyen alrededor de cero sin presentar un patrón sistemático claro. La dispersión de los puntos es relativamente uniforme a lo largo de los valores predichos, aunque todavía existen algunos valores atípicos en ciertos rangos.
+
+Esto indica que, tras aplicar la corrección GLS, la heterocedasticidad se reduce considerablemente, ya que no se aprecia la forma de abanico típica de varianza creciente.
+
+Residuos vs Orden de los Datos
+
+En la gráfica de residuos respecto al orden de las observaciones, la mayoría de los errores se mantienen cercanos a cero sin una tendencia clara. Sin embargo, se observa un grupo de observaciones donde la dispersión aumenta ligeramente, indicando que algunos segmentos aún presentan mayor variabilidad.
+
+En conjunto, las gráficas muestran que la corrección aplicada mejora la estabilidad de la varianza de los errores, aunque persisten pequeñas zonas con mayor dispersión. Por lo tanto, el modelo corregido presenta un comportamiento más cercano al supuesto de homocedasticidad y resulta más confiable que el modelo original.
+
+
+## Autocorrelación
+
+
+```{r}
+library(quantmod)
+getSymbols("TSLA" , from = "2019-11-29")
+```
+
+
+
+
+
+## Regresión autocorrelación rezagado
+
+
+
+```{r}
+library(dynlm)
+```
+
+```{r}
+serie_tsla <- ts(tsla1_returns)
+```
+
+
+```{r}
+reg1_tsla <- dynlm(serie_tsla ~ L(serie_tsla) , data = TSLA)
+print(reg1_tsla)
+```
+
+# Interpretaciones
+
+Se realizó una regresión del rendimiento actual de Tesla contra su valor rezagado para evaluar autocorrelación. El coeficiente del rezago resulta cercano a cero, indicando que el rendimiento pasado no explica significativamente el rendimiento actual. Por lo tanto, no se observa evidencia fuerte de autocorrelación en la serie de rendimientos.
+
+
+
+
+
+
+
+
+## Pruebas de Heterosedasticidad getSymbols modelo 51
+
+
+```{r}
+residuales_modelo51 <- modelo51$residuals
+```
+
+
+
+
+```{r}
+observaciones_modelo51 <- c(1:786)
+```
+
+
+
+
+```{r}
+plot(observaciones_modelo51 , residuales_modelo51, type = "l")
+```
+
+
+
+
+# Interpretaciones
+
+La gráfica muestra la evolución de los residuos del modelo a lo largo de las observaciones. Se observa que los residuos oscilan alrededor de cero sin presentar una tendencia clara en el tiempo, lo cual indica que el modelo no presenta un patrón sistemático de error.
+
+La dispersión de los residuos se mantiene relativamente estable durante la mayor parte del periodo, aunque existen algunos picos aislados donde la variabilidad aumenta momentáneamente. Sin embargo, estos episodios no parecen persistentes.
+
+En general, el comportamiento observado sugiere que la varianza de los errores es aproximadamente constante, por lo que no se aprecia evidencia fuerte de heterocedasticidad a partir de esta gráfica, aunque sería conveniente confirmarlo mediante pruebas formales.
+
+
+
+
+
+
+
+```{r}
+cuadres_modelo51 <- residuales_modelo51^2
+```
+
+
+
+
+```{r}
+plot(cuadres_modelo51, PortafoliogetS$AAPL)
+```
+
+
+# Interpretaciones
+
+
+
+La gráfica muestra la relación entre la variable dependiente (rendimientos de AAPL) y la variable explicativa utilizada en el modelo. Se observa que la mayoría de las observaciones se concentran cerca de valores bajos de la variable explicativa, mientras que conforme ésta aumenta, la dispersión de los rendimientos también tiende a ampliarse y aparecen algunos valores extremos.
+
+Este comportamiento indica que la variabilidad de los errores cambia a lo largo de las observaciones, lo cual sugiere posible presencia de heterocedasticidad, ya que la dispersión no se mantiene constante para todos los niveles de la variable explicativa.
+
+Por ello, sería conveniente confirmar este comportamiento mediante una prueba formal y, de ser necesario, aplicar correcciones que permitan obtener estimaciones más confiables.
+
+
+
+```{r}
+library(lmtest)
+bptest(modelo51)
+```
+
+
+
+
+```{r}
+library(lmtest)
+gqtest(modelo51, order.by = ~ AAPL, data= PortafoliogetS)
+```
+
+
+# Interpretaciones
+
+Se rechaza la hipótesis nula con un BP= +2 y un p-value que se aproxime a 0.
+
+Prueba Breusch–Pagan
+
+La prueba Breusch–Pagan arroja un p-value de 0.0099, valor menor a 0.05, por lo que se rechaza la hipótesis nula de homocedasticidad. Esto indica que la varianza de los errores no es constante y el modelo presenta heterocedasticidad.
+
+Prueba Goldfeld–Quandt
+
+En la prueba Goldfeld–Quandt se obtiene un p-value de 0.066, ligeramente mayor a 0.05, por lo que no se rechaza la hipótesis nula de varianza constante al nivel de significancia del 5%. Sin embargo, el resultado se encuentra cercano al umbral, lo que sugiere que podrían existir leves cambios en la varianza entre segmentos.
+
+
+En conjunto, la evidencia indica que el modelo presenta heterocedasticidad moderada, confirmada principalmente por la prueba Breusch–Pagan, por lo que sería recomendable aplicar correcciones para obtener inferencias más confiables.
+
+
+## Correción de Heterosedasticidad
+# Generalized least squares (mínimos cuadrados)
+
+
+```{r}
+PortafoliogetS_log <- PortafoliogetS
+PortafoliogetS_log[] <- lapply(PortafoliogetS_log, function(x) {if(is.numeric(x)) {if(any(x <= 0)) log(x + 1) else log(x)} else {x}})
+varfunc.olsgetS <- lm(log(residuales_modelo51^2 + 0.00001) ~ JPM + HD + COST + CAT, data = PortafoliogetS_log)  
+h_techo1 <- exp(varfunc.olsgetS$fitted.values)
+modelo_gls1 <- lm(log(1 + AAPL) ~ JPM + HD + COST + CAT, data = PortafoliogetS_log, weights = 1/h_techo1)
+summary(modelo_gls1)
+```
+
+
+
+
+
+
+
+# Interpretaciones
+
+
+Después de detectar heterocedasticidad en el modelo original, se estimó un modelo mediante mínimos cuadrados generalizados (GLS) utilizando ponderaciones para corregir la varianza no constante de los errores.
+
+El modelo muestra que los rendimientos de AAPL presentan una relación positiva y estadísticamente significativa con los rendimientos de JPM, HD, COST y CAT, ya que todas estas variables presentan coeficientes positivos y p-values menores a 0.01. Esto indica que cuando estas acciones presentan aumentos en sus rendimientos, AAPL tiende a moverse en la misma dirección.
+
+El ajuste del modelo presenta un R² ajustado de aproximadamente 0.215, lo que indica que cerca del 21% de la variación en los rendimientos de AAPL es explicada por las acciones incluidas en el modelo. Aunque el poder explicativo no es alto, esto es normal en modelos de rendimientos financieros, donde gran parte del comportamiento es difícil de predecir.
+
+Finalmente, el estadístico F muestra un p-value menor a 0.01, indicando que el modelo es globalmente significativo y que las variables explicativas aportan información relevante para explicar el comportamiento de AAPL.
+
+Para una mayor certeza debemos realizar laspruebas BP Y GQ para confirmar
+
+
+
+
+
+# Hacer pruebas BP Y GQ 
+
+Hay que analizar este modelo para ver si no tiene HETERO
+
+
+```{r}
+bptest(modelo_gls1)
+gqtest(modelo_gls1)
+```
+
+
+
+#Interpretaciones
+
+La prueba de Breusch–Pagan arroja un p-value menor a 0.05, por lo que se rechaza la hipótesis nula de homocedasticidad, indicando que la varianza de los errores no es constante y el modelo presenta heterocedasticidad.
+
+De igual forma, la prueba de Goldfeld–Quandt presenta un p-value de 7.73e-05, también menor a 0.05, lo que confirma que la varianza de los errores aumenta entre segmentos de la muestra, mostrando nuevamente evidencia de heterocedasticidad.
+
+En consecuencia, ambas pruebas coinciden en que el modelo aún presenta heterocedasticidad, por lo que es razonable replantear la especificación del modelo, por ejemplo eliminando o sustituyendo variables, para buscar una estructura más estable de la varianza de los errores.
+
+
+
+# Graficar para observar si se perdió la heterocedasticidad
+
+
+```{r}
+plot(modelo_gls1$fitted.values, residuals(modelo_gls1),
+     main = "Residuales vs Ajustados (GLS)",
+     xlab = "Valores Predichos",
+     ylab = "Residuales",
+     col = "blue", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+```{r}
+plot(residuals(modelo_gls1),
+     main = "Residuales vs Orden de Datos",
+     xlab = "Índice (Fila)",
+     ylab = "Residuales",
+     col = "darkgreen", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+# Interpretaciones
+
+Residuos vs valores ajustados
+
+En la gráfica de residuos contra valores ajustados se observa que los puntos se concentran alrededor de cero sin mostrar un patrón sistemático claro. La dispersión de los residuos se mantiene relativamente uniforme a lo largo de los valores predichos, aunque aparecen algunos valores atípicos aislados.
+
+Esto sugiere que, tras aplicar el modelo GLS, la varianza de los errores es más estable, ya que no se aprecia un patrón en forma de abanico ni una tendencia evidente en la dispersión.
+
+Residuos vs orden de los datos
+
+En la gráfica de residuos respecto al orden de las observaciones, los errores oscilan alrededor de cero sin mostrar una tendencia persistente en el tiempo. Aunque se observan algunos picos aislados de mayor variabilidad, estos no se mantienen de forma continua.
+
+Esto indica que no se aprecia un patrón temporal claro en los errores, lo cual sugiere estabilidad del modelo a lo largo de la muestra.
+
+En conjunto, ambas gráficas muestran que el modelo presenta un comportamiento razonablemente estable en los residuos, aunque persisten algunos valores extremos aislados, algo común en datos financieros. Por lo tanto, el modelo presenta una mejora visual en la estabilidad de los errores respecto al modelo original.
+
+
+
+
+## Pruebas de Heterosedasticidad getSymbols modelo 52
+
+
+Debido a que no se eliminó del todo la heterocedasticidad en el modelo anterior, realicé un tercer modelo, en el cual las variables que utilicé son altamente significativas, a continuación haremos todas las pruebas y veamos que podemos concluir.
+
+
+```{r}
+residuales_modelo52 <- modelo52$residuals
+```
+
+
+
+
+```{r}
+observaciones_modelo52 <- c(1:786)
+```
+
+
+
+
+```{r}
+plot(observaciones_modelo52 , residuales_modelo52, type = "l")
+```
+
+
+
+
+# Interpretaciones
+
+El gráfico de residuales en función del orden de las observaciones muestra que los errores del modelo se distribuyen alrededor de cero sin una tendencia claramente definida, lo que indica que el modelo no presenta problemas evidentes de autocorrelación sistemática.
+
+La mayoría de los residuales se mantienen dentro de un rango aproximado entre -0.06 y 0.10, aunque se observan algunos picos aislados, especialmente alrededor de la observación 550–600, lo cual puede asociarse a episodios de mayor volatilidad del mercado.
+
+No se aprecia un patrón creciente o decreciente sostenido en la varianza a lo largo del tiempo, aunque sí existen periodos con mayor dispersión, lo cual es consistente con el comportamiento típico de rendimientos financieros (volatilidad agrupada).
+
+En general, el comportamiento de los residuales sugiere que el modelo captura adecuadamente la relación lineal entre AAPL y las variables explicativas (JPM, HD y COST), aunque persiste variabilidad propia del mercado que no puede eliminarse completamente.
+
+
+
+
+
+
+```{r}
+cuadres_modelo52 <- residuales_modelo52^2
+```
+
+
+
+
+```{r}
+plot(cuadres_modelo52, PortafoliogetS$AAPL)
+```
+
+
+# Interpretaciones
+
+
+El gráfico muestra la relación entre los cuadrados de los residuales del modelo 52 y los rendimientos de AAPL. Se observa que la mayoría de los puntos se concentran cerca de valores pequeños de los errores, lo que indica que en condiciones normales el modelo presenta baja varianza residual.
+
+Sin embargo, conforme aumentan los valores en el eje horizontal (mayor magnitud de los errores), la dispersión vertical crece considerablemente. Se identifican algunos puntos extremos donde los residuales al cuadrado alcanzan valores significativamente mayores, lo cual sugiere la presencia de episodios de alta volatilidad.
+
+Este patrón no es completamente aleatorio, ya que existe mayor dispersión cuando los errores son más grandes, lo que es característico de heterocedasticidad. En otras palabras, la varianza del error no parece constante a lo largo de las observaciones.
+
+Aunque el modelo 52 mejoró la significancia estadística y redujo variables innecesarias, el comportamiento del gráfico sugiere que la heterocedasticidad no ha sido eliminada completamente, lo cual es común en datos financieros debido a la volatilidad agrupada del mercado.
+
+
+
+```{r}
+library(lmtest)
+bptest(modelo52)
+```
+
+
+
+
+```{r}
+library(lmtest)
+gqtest(modelo52, order.by = ~ AAPL, data= PortafoliogetS)
+```
+
+
+# Interpretaciones
+
+Prueba Breusch–Pagan
+
+La prueba Breusch–Pagan arroja un p-value de 0.01433, valor menor a 0.05, por lo que se rechaza la hipótesis nula de homocedasticidad.Esto indica que la varianza de los errores no es constante y el modelo presenta heterocedasticidad. Aunque el estadístico BP (10.565) no es extremadamente alto, el nivel de significancia confirma que existe variación sistemática en la dispersión de los residuales.
+
+Prueba Goldfeld–Quandt
+
+En la prueba Goldfeld–Quandt se obtiene un p-value de 0.077, valor mayor a 0.05, por lo que no se rechaza la hipótesis nula de varianza constante al nivel de significancia del 5%.Sin embargo, el resultado se encuentra relativamente cercano al umbral crítico, lo que sugiere que podrían existir cambios leves en la varianza entre segmentos, aunque no son suficientemente fuertes para confirmar heterocedasticidad bajo esta prueba.
+
+En conjunto, la evidencia indica que el modelo presenta heterocedasticidad moderada, confirmada principalmente por la prueba Breusch–Pagan.Por lo tanto, aunque el modelo es estadísticamente significativo y los coeficientes son relevantes, sería recomendable aplicar errores estándar robustos para obtener inferencias más confiables en el análisis.
+
+
+## Correción de Heterosedasticidad
+# Generalized least squares (mínimos cuadrados)
+
+
+```{r}
+PortafoliogetS_log <- PortafoliogetS
+PortafoliogetS_log[] <- lapply(PortafoliogetS_log, function(x) {if(is.numeric(x)) {if(any(x <= 0)) log(x + 1) else log(x)} else {x}})
+varfunc.olsgetS <- lm(log(residuales_modelo52^2 + 0.00001) ~ JPM + HD + COST , data = PortafoliogetS_log)  
+h_techo1 <- exp(varfunc.olsgetS$fitted.values)
+modelo_gls2 <- lm(log(1 + AAPL) ~ JPM + HD + COST , data = PortafoliogetS_log, weights = 1/h_techo1)
+summary(modelo_gls2)
+```
+
+
+
+
+
+# Interpretaciones
+
+
+El modelo fue estimado utilizando Mínimos Cuadrados Generalizados (GLS) con ponderaciones derivadas de la función de varianza estimada, con el objetivo de corregir la heterocedasticidad detectada en el modelo anterior.
+
+Los residuales ponderados presentan una distribución más ajustada, indicando que el problema de varianza no constante fue parcialmente corregido mediante el uso de pesos inversos.
+
+El intercepto (0.0002788) no es estadísticamente significativo, por lo que no existe un rendimiento base relevante cuando las demás acciones no presentan movimientos.
+
+Las tres variables incluidas continúan siendo altamente significativas:
+
+JPM (0.2246)
+
+HD (0.2243)
+
+COST (0.2517)
+
+COST mantiene la mayor influencia sobre AAPL. Esto indica que cuando COST aumenta 1%, AAPL tiende a incrementarse aproximadamente 0.25% en promedio, manteniendo constantes las demás variables.
+
+El modelo presenta un R² de 0.1926, lo que indica que aproximadamente el 19% de la variación en los rendimientos de AAPL es explicada por estas tres acciones. Aunque el R² es ligeramente menor que en el modelo OLS anterior, ahora las estimaciones son más confiables al haberse corregido la heterocedasticidad.
+
+
+
+# Hacer pruebas BP Y GQ 
+
+Hay que analizar este modelo para ver si no tiene HETERO
+
+
+```{r}
+bptest(modelo_gls2)
+gqtest(modelo_gls2)
+```
+
+
+
+#Interpretaciones
+La prueba Breusch–Pagan arroja un BP = 10,793,839 con un p-value < 2.2e-16, valor extremadamente menor a 0.05, por lo que se rechaza contundentemente la hipótesis nula de homocedasticidad, indicando que la varianza de los errores no es constante. De igual forma, la prueba Goldfeld–Quandt presenta un GQ = 1.5373 con un p-value = 1.24e-05, también menor a 0.05, lo que confirma que se rechaza la hipótesis de varianza constante y que la varianza aumenta entre segmentos de la muestra. En conjunto, ambas pruebas evidencian que la heterocedasticidad persiste incluso después de aplicar la transformación logarítmica y el esquema de ponderación mediante GLS, por lo que el modelo continúa presentando problemas de varianza no constante.
+
+
+# Graficar para observar si se perdió la heterocedasticidad
+
+
+```{r}
+plot(modelo_gls2$fitted.values, residuals(modelo_gls2),
+     main = "Residuales vs Ajustados (GLS)",
+     xlab = "Valores Predichos",
+     ylab = "Residuales",
+     col = "blue", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+```{r}
+plot(residuals(modelo_gls2),
+     main = "Residuales vs Orden de Datos",
+     xlab = "Índice (Fila)",
+     ylab = "Residuales",
+     col = "darkgreen", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+# Interpretaciones
+
+
+Gráfico: Residuales vs Valores Ajustados (GLS)
+
+En el gráfico de residuales contra valores predichos se observa que los errores se encuentran centrados alrededor de cero, lo cual es consistente con un modelo correctamente especificado en términos de media. Sin embargo, la dispersión de los residuales no parece completamente uniforme a lo largo del rango de valores ajustados. Se observan algunos puntos extremos y una ligera ampliación en la dispersión para ciertos niveles de valores predichos, lo que sugiere que la varianza podría no ser completamente constante.
+
+Aunque visualmente la heterocedasticidad no es extremadamente evidente, la presencia de observaciones con mayor dispersión confirma lo detectado por las pruebas formales: la varianza de los errores no es totalmente homogénea.
+
+Gráfico: Residuales vs Orden de los Datos
+
+En el gráfico de residuales respecto al índice temporal (orden de observación), los errores oscilan alrededor de cero sin mostrar una tendencia sistemática clara. No se aprecia un patrón definido de crecimiento progresivo o disminución continua de la varianza a lo largo del tiempo.
+
+No obstante, se observan algunos periodos con mayor volatilidad (agrupaciones de puntos más dispersos), lo cual es consistente con el comportamiento típico de rendimientos financieros, donde existen episodios de mayor incertidumbre de mercado.
+
+
+
+## Conclusión final
+
+La heterocedasticidad no pudo eliminarse completamente debido a que estamos trabajando con rendimientos financieros, los cuales presentan de manera estructural cambios en la volatilidad a lo largo del tiempo. En los mercados financieros es común observar periodos de alta y baja incertidumbre (volatility clustering), lo que implica que la varianza de los errores no es constante por naturaleza.
+
+Aunque se aplicaron transformaciones logarítmicas y un esquema de ponderación tipo GLS, estas técnicas solo corrigen parcialmente el problema cuando la heterocedasticidad es de carácter dinámico y depende del comportamiento propio del mercado. Las pruebas Breusch–Pagan y Goldfeld–Quandt confirman que la varianza sigue siendo dependiente de los valores del modelo o de ciertos segmentos de la muestra.
+
+
+
+## Autocorrelación
+
+## Regresión autocorrelación rezagado getSymbols
+
+
+
+```{r}
+library(dynlm)
+```
+
+```{r}
+serie_aapl1 <- ts(PortafoliogetS$AAPL)
+```
+
+
+```{r}
+reg1_aapl1 <- dynlm(serie_aapl1 ~ L(serie_aapl1) , data = PortafoliogetS)
+print(reg1_aapl1)
+```
+
+# Interpretaciones
+
+Se realizó una regresión del rendimiento actual de AAPL contra su valor rezagado con el fin de evaluar la presencia de autocorrelación en la serie. El coeficiente del rezago es positivo pero pequeño (0.052), lo que indica que solo una pequeña parte del rendimiento pasado se transmite al rendimiento actual.
+
+Este valor cercano a cero sugiere que la dependencia temporal entre rendimientos consecutivos es débil, por lo que no se observa una autocorrelación fuerte en la serie de rendimientos de AAPL. Esto es consistente con el comportamiento típico de los rendimientos financieros, que suelen comportarse de manera cercana a un proceso aleatorio.
+
+
+
+
+
+
+
+
+```{r}
+library(dynlm)
+
+acciones <- colnames(PortafoliogetS)
+
+for (acc in acciones) {
+  cat("\n====================\n")
+  cat("Autocorrelación:", acc, "\n")
+  
+  serie <- ts(PortafoliogetS[[acc]])
+  modelo <- dynlm(serie ~ L(serie, 1))
+  
+  print(summary(modelo)$coefficients)
+}
+```
+
+
+
+
+# Interpretación
+
+
+
+Se realizó una regresión del rendimiento actual contra su valor rezagado para cada una de las acciones analizadas con el fin de detectar autocorrelación en las series de rendimientos.
+
+Los coeficientes asociados al rezago presentan valores cercanos a cero y, en la mayoría de los casos, no resultan estadísticamente significativos, lo que indica que el rendimiento pasado no explica de forma importante el rendimiento actual. Aunque en algunos casos el coeficiente es ligeramente positivo o negativo, su magnitud es pequeña y no muestra persistencia relevante.
+
+En consecuencia, no se encuentra evidencia de autocorrelación fuerte en los rendimientos de las acciones analizadas, comportamiento consistente con la teoría financiera, donde los rendimientos suelen aproximarse a un proceso aleatorio.

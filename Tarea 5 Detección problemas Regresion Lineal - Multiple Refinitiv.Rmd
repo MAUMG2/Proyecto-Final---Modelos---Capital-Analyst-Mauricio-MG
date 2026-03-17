@@ -1,0 +1,926 @@
+---
+title: "Tarea 4 Clase Regresion Multiple - Acciones - xls Supuestos Modelo"
+output: html_document
+date: "2026-02-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+## Tarea 4 Regresión Lineal Múltiple Refinitiv 
+
+A continuación realizaremos los modelos de regresión lineal múltiple, utilizando la información de refinitiv, con una frecuencia del precio de 5 minutos, utilizando la fecha del 05/02/26  al 09/02/26. Nuestra variable dependiente será la acción de AAPL y nuestras variables independientes serán las acciones de  AMZN, GOOGL, META, MSFT, NVDA y TSLA.
+
+
+
+
+```{r}
+library(readxl)
+AmazonNPhistory   <- read_excel("AmazonNPhistory.xlsx")
+AppleNPhistory    <- read_excel("AppleNPhistory.xlsx")
+GoogleNPhistory   <- read_excel("GoogleNPhistory.xlsx")
+MetaNPhistory      <- read_excel("MetaNPhistory.xlsx")
+MicrosoftNPhistory<- read_excel("MicrosoftNPhistory.xlsx")
+NvidiaNPhistory   <- read_excel("NvidiaNPhistory.xlsx")
+TeslaNPhistory    <- read_excel("TeslaNPhistory.xlsx")
+```
+
+
+
+
+
+
+
+# Organizar datos
+
+Una vez importadas las bases de datos es necesario asegurar que todas las series utilicen el mismo formato de fecha y hora. Esto permite alinear correctamente los datos entre las distintas acciones y evitar errores al momento de combinar las series. (Año, mes, día, hora, minuto, segundo)
+
+```{r}
+datetime_amznn <- as.POSIXct(
+  AmazonNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_aapln <- as.POSIXct(
+  AppleNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_googln <- as.POSIXct(
+  GoogleNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_metan <- as.POSIXct(
+  MetaNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_msftn <- as.POSIXct(
+  MicrosoftNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_nvdan <- as.POSIXct(
+  NvidiaNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_tslan <- as.POSIXct(
+  TeslaNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+```
+
+
+
+
+Con el fin de verificar que las fechas y horas hayan sido convertidas correctamente al formato temporal estándar, se visualizan las primeras observaciones de cada serie de tiempo. Esto permite confirmar que los registros mantienen una estructura consistente y que los datos están correctamente ordenados antes de continuar con el proceso de alineación y análisis.
+
+```{r}
+head(datetime_amznn)
+head(datetime_aapln)
+head(datetime_googln)
+head(datetime_metan)
+head(datetime_msftn)
+head(datetime_nvdan)
+head(datetime_tslan)
+```
+
+
+
+
+Posteriormente, se construye la serie de tiempo para cada acción utilizando la librería xts, la cual permite asociar los precios de cierre con su respectiva fecha y hora. Esto facilita el manejo y alineación de datos financieros en intervalos intradía. Se asigna un nombre a la columna para identificar claramente el activo dentro del análisis posterior.
+
+
+
+
+```{r}
+library(xts)
+
+amzn_close_xts <- xts(
+  AmazonNPhistory$Close,
+  order.by = datetime_amznn
+)
+colnames(amzn_close_xts) <- "AMZN.Close"
+
+aapl_close_xts <- xts(
+  AppleNPhistory$Close,
+  order.by = datetime_aapln
+)
+colnames(aapl_close_xts) <- "AAPL.Close"
+
+
+goog_close_xts <- xts(
+  GoogleNPhistory$Close,
+  order.by = datetime_googln
+)
+colnames(goog_close_xts) <- "GOOGL.Close"
+
+
+meta_close_xts <- xts(
+  MetaNPhistory$Close,
+  order.by = datetime_metan
+)
+colnames(meta_close_xts) <- "META.Close"
+
+
+msft_close_xts <- xts(
+  MicrosoftNPhistory$Close,
+  order.by = datetime_msftn
+)
+colnames(msft_close_xts) <- "MSFT.Close"
+
+
+nvda_close_xts <- xts(
+  NvidiaNPhistory$Close,
+  order.by = datetime_nvdan
+)
+colnames(nvda_close_xts) <- "NVDA.Close"
+
+
+tsla_close_xts <- xts(
+  TeslaNPhistory$Close,
+  order.by = datetime_tslan
+)
+colnames(tsla_close_xts) <- "TSLA.Close"
+
+
+
+
+```
+
+
+
+
+Una vez construidas las series de tiempo, se eliminan las observaciones con valores de 0 utilizando la función na.omit.
+
+
+
+```{r}
+aapl_close_xts <- na.omit(aapl_close_xts)
+amzn_close_xts <- na.omit(amzn_close_xts)
+goog_close_xts <- na.omit(goog_close_xts)
+meta_close_xts <- na.omit(meta_close_xts)
+msft_close_xts <- na.omit(msft_close_xts)
+nvda_close_xts <- na.omit(nvda_close_xts)
+tsla_close_xts <- na.omit(tsla_close_xts)
+```
+
+
+
+
+
+A continuación verificaremos el número de observaciones disponibles en cada serie de tiempo. Esto permite identificar posibles diferencias en la cantidad de registros entre las acciones y comprobar si es necesario realizar un ajuste para que todas las series tengan la misma longitud temporal antes de aplicar el análisis econométrico.
+
+
+
+
+```{r}
+sapply(list(
+  AAPL=aapl_close_xts, AMZN=amzn_close_xts, GOOGL=goog_close_xts, META=meta_close_xts,
+  MSFT=msft_close_xts, NVDA=nvda_close_xts, TSLA=tsla_close_xts
+), NROW)
+```
+
+
+Como nos pudimos dar cuenta en el paso anterior, tenemos distintos datos en las bases por lo que ahora debemos normalizar los timestamps a intervalos exactos de cinco minutos. Este procedimiento garantiza que todas las series queden alineadas bajo la misma estructura temporal y evita duplicados de registros que podrían afectar el análisis.
+
+
+```{r}
+library(lubridate)
+
+normalize_5min <- function(x) {
+  idx <- as.POSIXct(floor_date(as.POSIXct(index(x), tz="UTC"), "5 minutes"), tz="UTC")
+  index(x) <- idx
+  x <- x[!duplicated(index(x))]
+  x
+}
+
+aapl_close_xts <- normalize_5min(aapl_close_xts)
+amzn_close_xts <- normalize_5min(amzn_close_xts)
+goog_close_xts <- normalize_5min(goog_close_xts)
+meta_close_xts <- normalize_5min(meta_close_xts)
+msft_close_xts <- normalize_5min(msft_close_xts)
+nvda_close_xts <- normalize_5min(nvda_close_xts)
+tsla_close_xts <- normalize_5min(tsla_close_xts)
+```
+
+
+
+
+A continuación lo que haremos será identificar los timestamps que están presentes en todas las acciones analizadas. Esto permite asegurar que el análisis se realice utilizando observaciones comparables en el mismo instante temporal.
+
+
+
+
+```{r}
+idx_common <- Reduce(intersect, list(
+  index(aapl_close_xts),
+  index(amzn_close_xts),
+  index(goog_close_xts),
+  index(meta_close_xts),
+  index(msft_close_xts),
+  index(nvda_close_xts),
+  index(tsla_close_xts)
+))
+
+length(idx_common)
+```
+
+
+
+
+
+
+Una vez que identificamos los timestamps comunes entre todas las series, cada acción se recorta utilizando únicamente esos registros compartidos, lo cual es fundamental para poder realizar comparaciones y estimaciones econométricas consistentes.
+
+
+
+```{r}
+aapl_close_xts <- aapl_close_xts[idx_common]
+amzn_close_xts <- amzn_close_xts[idx_common]
+goog_close_xts <- goog_close_xts[idx_common]
+meta_close_xts <- meta_close_xts[idx_common]
+msft_close_xts <- msft_close_xts[idx_common]
+nvda_close_xts <- nvda_close_xts[idx_common]
+tsla_close_xts <- tsla_close_xts[idx_common]
+```
+
+
+
+
+
+Antes de continuar debemos verificar nuevamente el número de observaciones en cada serie de tiempo después del proceso de alineación. Esto permite confirmar que todas las acciones contienen exactamente la misma cantidad de datos y que las series están correctamente sincronizadas antes de proceder al cálculo de rendimientos y estimación de modelos de regresión.
+
+
+
+
+```{r}
+sapply(list(
+  AAPL=aapl_close_xts,
+  AMZN=amzn_close_xts,
+  GOOGL=goog_close_xts,
+  META=meta_close_xts,
+  MSFT=msft_close_xts,
+  NVDA=nvda_close_xts,
+  TSLA=tsla_close_xts
+), NROW)
+```
+
+
+## Retornos
+
+A continuación obtendremos los rendimientos de cada acción para poder compararlos
+
+
+
+.
+```{r}
+aapl_rendimientos2 <- diff(log(aapl_close_xts))
+amzn_rendimientos2 <- diff(log(amzn_close_xts))
+goog_rendimientos2 <- diff(log(goog_close_xts))
+meta_rendimientos2 <- diff(log(meta_close_xts))
+msft_rendimientos2 <- diff(log(msft_close_xts))
+nvda_rendimientos2 <- diff(log(nvda_close_xts))
+tsla_rendimientos2 <- diff(log(tsla_close_xts))
+```
+
+## Modelo Regresión lineal Múltiple Refinitiv
+
+Para poder usar el código lm, debemos tener todas nuestros datos en una sola base de datos, la cual nombraremos Portafoliorefi.
+
+
+```{r}
+Portafoliorefi <- data.frame(
+  AAPL = as.numeric(aapl_rendimientos2),
+  AMZN = as.numeric(amzn_rendimientos2),
+  GOOGL = as.numeric(goog_rendimientos2),
+  META = as.numeric(meta_rendimientos2),
+  MSFT = as.numeric(msft_rendimientos2),
+  NVDA = as.numeric(nvda_rendimientos2),
+  TSLA = as.numeric(tsla_rendimientos2)
+)
+```
+
+
+
+## Primer modelo 
+
+A continuación, ahora si realizaremos el modelo.
+
+
+```{r}
+modelo40 <- lm(AAPL ~ . , data = Portafoliorefi)
+summary(modelo40)
+```
+
+# Interpretaciones
+
+Los residuales del modelo presentan valores pequeños y cercanos a cero, lo que indica que las diferencias entre los rendimientos observados de Apple y los estimados por el modelo no son grandes en promedio. Esto sugiere que el modelo logra capturar parte del comportamiento de la serie, aunque no existe un ajuste perfecto entre los activos.
+
+El intercepto es igual a −1.575e−05, el cual representa el rendimiento promedio de Apple cuando los rendimientos de todas las demás acciones son iguales a cero. Este valor es prácticamente nulo, lo que indica que no existe un rendimiento base significativo cuando el resto del mercado no presenta variaciones en ese intervalo.
+
+En cuanto a las variables explicativas, se observa que no todas presentan la misma relevancia estadística. Por ejemplo, el coeficiente asociado a GOOGL es negativo y estadísticamente significativo, lo que indica que movimientos en los rendimientos de Google tienen una relación inversa con los rendimientos de Apple dentro del periodo analizado. Asimismo, NVDA presenta un coeficiente negativo y altamente significativo, lo que indica que los cambios en Nvidia tienen una influencia importante sobre el comportamiento de Apple en la muestra considerada.
+
+Por otro lado, AMZN, META y MSFT presentan coeficientes positivos, pero no resultan estadísticamente significativos al nivel convencional, lo que sugiere que su efecto sobre Apple no puede diferenciarse claramente del ruido estadístico en este periodo. En contraste, TSLA muestra un coeficiente positivo y significativo, indicando que cuando Tesla presenta incrementos en sus rendimientos, Apple tiende también a registrar incrementos, aunque con menor magnitud.
+
+El error estándar residual del modelo es 0.001176, lo que indica que la variación promedio de los errores del modelo es relativamente baja, aunque todavía existe una parte importante del movimiento de Apple que no es explicada por las demás acciones.
+
+La R² del modelo es 0.0847, lo que implica que aproximadamente el 8.47% de la variación de los rendimientos de Apple es explicada por los rendimientos del resto de acciones incluidas en el modelo. Esto indica que, aunque existe cierta relación entre los activos, la mayor parte del comportamiento de Apple depende de factores propios o de variables no incluidas en el modelo.
+
+Finalmente, el estadístico F del modelo resulta significativo, lo cual indica que, en conjunto, las variables explicativas sí aportan información relevante para explicar el comportamiento de Apple, aunque el poder explicativo total sigue siendo moderado.
+
+
+
+# Conclusión
+
+Existe evidencia de que algunos activos del portafolio, particularmente Nvidia, Google y Tesla, influyen de manera significativa en los movimientos de Apple durante el periodo analizado. Sin embargo, el modelo muestra que gran parte de la variación de Apple se debe a factores propios o a variables externas no incluidas en el análisis, por lo que el ajuste general del modelo es limitado.
+
+
+
+## Segundo modelo
+
+
+
+A continuación realizaré un segundo modelo, utilizando las variables que resultaron significativas en el primero modelo (NVDA, TSLA, GOOGL)
+
+
+
+
+```{r}
+modelo41 <- lm(AAPL ~ NVDA + TSLA + GOOGL, data = Portafoliorefi)
+summary(modelo41)
+```
+
+
+
+# Interpretaciones
+
+Los residuales presentan valores cercanos a cero, lo que indica que las diferencias entre los rendimientos observados y los estimados de Apple por el modelo son relativamente pequeñas, aunque el ajuste no es perfecto.
+
+El intercepto es −7.19e−06 y no resulta estadísticamente significativo, lo que indica que el rendimiento esperado de Apple es prácticamente cero cuando Nvidia, Tesla y Google no presentan variaciones en el periodo analizado.
+
+En cuanto a las variables explicativas, Nvidia presenta un coeficiente negativo de −1.390e−01 y es altamente significativo, indicando que incrementos en sus rendimientos suelen asociarse con movimientos en sentido contrario en Apple. Por su parte, Tesla muestra un coeficiente positivo de 1.113e-01 y estadísticamente significativo, lo que indica que incrementos en Tesla tienden a acompañarse de incrementos en los rendimientos de Apple. En contraste, Google presenta un coeficiente negativo de -5.851e-02, pero con una significancia estadística más débil, por lo que su efecto es menos claro.
+
+El error estándar residual del modelo es 0.001182, lo que indica que aún existe variabilidad no explicada en los rendimientos de Apple. Asimismo, el valor de R² muestra que aproximadamente el 6.86% de la variación de Apple es explicada por estas acciones, por lo que la mayor parte de sus movimientos depende de otros factores no incluidos en el modelo.
+
+# Conclusión
+
+El modelo muestra que Nvidia y Tesla son las acciones que presentan mayor influencia sobre los movimientos de Apple en el periodo analizado, aunque el poder explicativo total del modelo es limitado. Aunque existen relaciones entre estos activos, Apple mantiene un comportamiento en gran medida independiente, lo cual es relevante al considerar estrategias de diversificación dentro del portafolio.
+
+
+
+
+
+## Tercer modelo
+
+
+
+A continuación realizaré un tercer modelo, utilizando las variables que resultaron significativas en el segundo modelo y agregando MSFT la cual es una empresa líder en el sector. (NVDA, TSLA, MSFT)
+
+
+
+
+```{r}
+modelo42 <- lm(AAPL ~ NVDA + TSLA + MSFT, data = Portafoliorefi)
+summary(modelo42)
+```
+
+
+
+# Interpretaciones
+
+Los residuales del modelo presentan valores entre -0.0086 y 0.0057, lo que indica que el modelo logra capturar parte del comportamiento de AAPL con errores relativamente pequeños, aunque sigue existiendo variabilidad propia del mercado que no es completamente explicada.
+
+El intercepto no es estadísticamente significativo (p = 0.9888), por lo que no existe un rendimiento base relevante cuando NVDA, TSLA y MSFT no presentan movimientos.
+
+En cuanto a las variables explicativas, NVDA resulta altamente significativa (p < 0.001) y presenta un coeficiente negativo (-0.150), lo que indica que cuando NVDA aumenta 1%, AAPL tiende a disminuir aproximadamente 0.15% en el periodo analizado, sugiriendo un posible efecto de sustitución o comportamiento inverso en ciertos momentos.
+
+TSLA muestra un coeficiente positivo (0.0687) y es marginalmente significativa al 10% (p = 0.0583), lo que sugiere una relación positiva débil con AAPL.
+
+MSFT no resulta estadísticamente significativa (p = 0.2152), por lo que no se puede afirmar que tenga un efecto claro sobre los rendimientos de AAPL dentro de este modelo.
+
+El modelo presenta un R² de 0.0646, lo que indica que aproximadamente el 6.4% de la variación en los rendimientos de AAPL es explicada por estas tres acciones. Este valor es bajo, pero es común en datos financieros de alta frecuencia debido a la naturaleza volátil y multifactorial del mercado.
+
+
+## Problemas del modelo de Regresión (Portafoliorefi)
+
+
+# Detección de Multicolinealidad 
+
+
+#Correlación
+
+
+
+```{r}
+Portafoliorefi <- na.omit(Portafoliorefi)
+cor(Portafoliorefi)
+```
+
+
+En general, las acciones tecnológicas muestran una relación positiva moderada entre sí, lo que indica que tienden a reaccionar de manera similar ante condiciones de mercado. Sin embargo, Apple presenta una relación más débil con el resto, lo cual puede aportar cierto efecto de diversificación dentro del portafolio.
+
+
+
+
+```{r}
+correlacion_Portafoliorefi <- cor(Portafoliorefi)
+```
+
+
+
+```{r}
+library(ggcorrplot)
+ggcorrplot(correlacion_Portafoliorefi)
+```
+
+
+# Interpretaciones
+
+La matriz y el mapa de calor muestran que varias acciones tecnológicas presentan correlaciones positivas moderadas entre sí, indicando que tienden a moverse en la misma dirección. Esto explica por qué algunas variables pierden significancia en el modelo de regresión, ya que contienen información similar. En contraste, Apple presenta correlaciones más bajas con algunas acciones, lo que puede aportar cierto efecto de diversificación en el portafolio.
+
+
+## VIF modelo uno 
+
+
+```{r}
+library(car)
+vif(modelo40)
+```
+
+
+# Interpretaciones
+El análisis de multicolinealidad mediante el VIF muestra valores cercanos a 1 para todas las variables explicativas, lo que indica que no existe una correlación fuerte entre ellas. Por lo tanto, no se detectan problemas de multicolinealidad y el modelo puede interpretarse con confianza sin necesidad de eliminar variables adicionales.
+
+
+## VIF modelo dos 
+
+
+```{r}
+vif(modelo41)
+```
+
+
+# Interpretaciones
+
+Analizando el VIF del modelo de solo las variables significativas, se acerca aún más a 1, lo que quiere decir que no existe multicolinealidad y es más acertado.
+
+
+
+## VIF modelo tres 
+
+
+```{r}
+vif(modelo42)
+```
+
+
+# Interpretaciones
+
+Todos los valores son claramente menores a 5 (e incluso menores a 2), por lo que no existe evidencia de multicolinealidad relevante entre las variables explicativas del modelo.
+
+En términos prácticos, esto indica que NVDA, TSLA y MSFT no están excesivamente correlacionadas entre sí dentro del modelo, y por lo tanto los errores estándar no están inflados por problemas de colinealidad.
+
+
+
+## Pruebas de Heterosedasticidad refinitiv modelo 41
+
+
+```{r}
+residuales_modelo41 <- modelo41$residuals
+```
+
+
+
+
+```{r}
+observaciones_modelo41 <- c(1:365)
+```
+
+
+
+
+```{r}
+plot(observaciones_modelo41 , residuales_modelo41, type = "l")
+```
+
+
+
+
+# Interpretaciones
+
+En el gráfico de residuales contra el orden de las observaciones, los errores se mantienen distribuidos alrededor de cero sin mostrar un patrón claro de expansión progresiva en su dispersión. La varianza parece relativamente estable a lo largo de la muestra, aunque se observan algunos valores atípicos puntuales, especialmente alrededor de la observación 300.
+
+No se aprecia un patrón tipo “embudo” ni un incremento sistemático en la amplitud de los residuales, lo cual visualmente sugiere que la varianza de los errores podría ser constante.
+
+Desde el análisis gráfico, no se observa evidencia clara de heterocedasticidad estructural en el modelo 41. La dispersión de los residuales parece mantenerse relativamente homogénea, aunque los choques aislados son normales en datos financieros.
+
+Sin embargo, dado que en mercados financieros la volatilidad tiende a agruparse, es recomendable confirmar este resultado mediante pruebas formales como Breusch–Pagan o Goldfeld–Quandt para validar estadísticamente la homocedasticidad.
+
+
+
+
+
+
+
+```{r}
+cuadres_modelo41 <- residuales_modelo41^2
+```
+
+
+
+
+```{r}
+plot(cuadres_modelo41, Portafoliorefi$AAPL)
+```
+
+
+# Interpretaciones
+
+
+En el gráfico se observa que la mayoría de los puntos se concentran cerca de cero, pero conforme aumentan los valores en el eje horizontal (cuadrados de los residuales), aparecen observaciones más dispersas y algunos valores extremos.
+
+La distribución no es completamente uniforme:
+
+Existe mayor dispersión en ciertos niveles.
+
+Se observan puntos alejados que indican episodios de mayor volatilidad.
+
+La nube no mantiene una estructura perfectamente constante.
+
+Aunque no se aprecia un embudo muy marcado, sí hay evidencia visual de que la varianza no es perfectamente constante, especialmente por la presencia de observaciones con residuales al cuadrado significativamente mayores.
+
+
+```{r}
+library(lmtest)
+bptest(modelo41)
+```
+
+
+
+
+```{r}
+library(lmtest)
+gqtest(modelo41, order.by = ~ AAPL, data= Portafoliorefi)
+```
+
+
+# Interpretaciones
+
+Se rechaza la hipótesis nula con un BP= +2 y un p-value que se aproxime a 0.
+
+Prueba Breusch–Pagan
+
+La prueba Breusch–Pagan arroja un BP = 57.14 con un p-value = 2.398e-12, valor extremadamente menor a 0.05.
+
+Por lo tanto, se rechaza la hipótesis nula de homocedasticidad, lo que indica que la varianza de los errores no es constante. Esto confirma que el modelo presenta heterocedasticidad estadísticamente significativa.
+
+Prueba Goldfeld–Quandt
+
+En la prueba Goldfeld–Quandt se obtiene un GQ = 0.68088 con un p-value = 0.9947, valor muy superior a 0.05.
+
+En este caso, no se rechaza la hipótesis nula de varianza constante, lo que sugiere que no existe un patrón claro de incremento sistemático de la varianza entre los segmentos evaluados.
+
+
+## Correción de Heterosedasticidad
+# Generalized least squares (mínimos cuadrados)
+
+
+```{r}
+Portafoliorefi_log <- Portafoliorefi
+Portafoliorefi_log[] <- lapply(Portafoliorefi_log, function(x) {if(is.numeric(x)) {if(any(x <= 0)) log(x + 1) else log(x)} else {x}})
+varfunc.olsrefi <- lm(log(residuales_modelo41^2 + 0.00001) ~ NVDA + TSLA + GOOGL , data = Portafoliorefi)  
+h_techo2 <- exp(varfunc.olsrefi$fitted.values)
+modelo_gls3 <- lm(log(1 + AAPL) ~ NVDA + TSLA + GOOGL, data = Portafoliorefi, weights = 1/h_techo2)
+summary(modelo_gls3)
+```
+
+
+
+
+
+
+
+# Interpretaciones
+
+El modelo GLS muestra que, tras aplicar la ponderación para corregir la varianza, el intercepto no es estadísticamente significativo, lo que indica que no existe un rendimiento base relevante cuando las demás acciones no presentan movimientos. NVDA resulta significativa y presenta un coeficiente negativo, sugiriendo que aumentos en NVDA se asocian con disminuciones en AAPL durante el periodo analizado, mientras que TSLA es significativa al 5% con un efecto positivo sobre AAPL; por su parte, GOOGL no es estadísticamente significativa. El R² es bajo (4%), lo cual es común en modelos de rendimientos financieros debido a la alta volatilidad y a la influencia de múltiples factores externos, aunque el modelo es globalmente significativo según la prueba F.
+
+Para una mayor certeza debemos realizar laspruebas BP Y GQ para confirmar
+
+
+
+# Hacer pruebas BP Y GQ 
+
+Hay que analizar este modelo para ver si no tiene HETERO
+
+
+```{r}
+bptest(modelo_gls3)
+gqtest(modelo_gls3)
+```
+
+
+
+#Interpretaciones
+
+La prueba Breusch–Pagan aplicada al modelo GLS3 arroja un estadístico BP = 33,011,991 con un p-value < 2.2e-16, valor extremadamente menor a 0.05, por lo que se rechaza contundentemente la hipótesis nula de homocedasticidad; esto indica que la varianza de los errores no es constante y que el modelo continúa presentando heterocedasticidad significativa incluso después de la corrección por ponderación. Por otro lado, la prueba Goldfeld–Quandt reporta un GQ = 0.66821 con un p-value = 0.9963, muy superior a 0.05, por lo que no se rechaza la hipótesis nula de varianza constante bajo este criterio específico. En conjunto, los resultados muestran evidencia mixta, pero dado que la prueba Breusch–Pagan es altamente significativa, se concluye que la heterocedasticidad persiste en el modelo y que la corrección aplicada no fue suficiente para eliminar completamente el problema.
+
+
+
+# Graficar para observar si se perdió la heterocedasticidad
+
+
+```{r}
+plot(modelo_gls3$fitted.values, residuals(modelo_gls3),
+     main = "Residuales vs Ajustados (GLS)",
+     xlab = "Valores Predichos",
+     ylab = "Residuales",
+     col = "blue", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+```{r}
+plot(residuals(modelo_gls3),
+     main = "Residuales vs Orden de Datos",
+     xlab = "Índice (Fila)",
+     ylab = "Residuales",
+     col = "darkgreen", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+# Interpretaciones
+Residuos vs valores ajustados
+
+En la gráfica de residuos contra valores ajustados se observa que los puntos se concentran alrededor de cero sin mostrar un patrón sistemático claro. La dispersión de los residuos se mantiene relativamente uniforme en la zona central de los valores predichos, aunque aparecen algunos valores atípicos aislados que generan ligeros aumentos en la variabilidad.
+
+No se aprecia un patrón en forma de abanico marcado, pero la dispersión no es completamente constante, lo cual sugiere que, aun después de aplicar el modelo GLS, la varianza de los errores no es perfectamente homogénea. Sin embargo, visualmente se percibe mayor estabilidad respecto al modelo original.
+
+Residuos vs orden de los datos
+
+En la gráfica de residuos respecto al orden de las observaciones, los errores oscilan alrededor de cero sin mostrar una tendencia creciente o decreciente persistente en el tiempo. Aunque se observan algunos picos aislados de mayor magnitud, estos no se mantienen de forma continua a lo largo de la muestra.
+
+Esto indica que no se aprecia un patrón temporal claro en los errores, lo cual sugiere estabilidad del modelo en términos de comportamiento dinámico.
+
+
+
+## Pruebas de Heterosedasticidad getSymbols modelo 42
+
+
+Debido a que no se eliminó del todo la heterocedasticidad en el modelo anterior, realicé un tercer modelo, en el cual las variables que utilicé son altamente significativas, a continuación haremos todas las pruebas y veamos que podemos concluir.
+
+
+```{r}
+residuales_modelo42 <- modelo42$residuals
+```
+
+
+
+
+```{r}
+observaciones_modelo42 <- c(1:365)
+```
+
+
+
+
+```{r}
+plot(observaciones_modelo42 , residuales_modelo42, type = "l")
+```
+
+
+
+
+# Interpretaciones
+
+
+En la gráfica de residuos respecto al orden de las observaciones se observa que los errores oscilan alrededor de cero sin mostrar una tendencia creciente o decreciente sostenida en el tiempo. La mayoría de los residuos se concentran cerca de cero, lo cual indica que el modelo capta adecuadamente el comportamiento promedio de AAPL.
+
+Sin embargo, se identifican algunos picos aislados de mayor magnitud, especialmente hacia la parte final de la muestra, lo que sugiere episodios puntuales de mayor volatilidad. Este comportamiento es común en datos financieros, donde existen choques o eventos específicos que incrementan temporalmente la variabilidad.
+
+En general, no se aprecia un patrón sistemático claro, pero la presencia de valores extremos sugiere que podría existir cierta heterocedasticidad asociada a periodos de alta volatilidad del mercado.
+
+
+
+
+
+```{r}
+cuadres_modelo42 <- residuales_modelo42^2
+```
+
+
+
+
+```{r}
+plot(cuadres_modelo42, Portafoliorefi$AAPL)
+```
+
+
+# Interpretaciones
+
+En la gráfica de los cuadrados de los residuos contra AAPL se observa que la dispersión no es completamente uniforme. La mayoría de los puntos se concentran cerca de valores pequeños en el eje horizontal, pero conforme aumentan ciertos valores aparecen observaciones más alejadas, incluyendo algunos puntos extremos.
+
+Se aprecia una forma ligeramente curvada o tipo “abanico”, donde la variabilidad parece incrementarse en algunos rangos específicos. Esto sugiere que la varianza de los errores podría depender del nivel de la variable explicativa, lo cual es un indicio visual de heterocedasticidad.
+
+Además, la presencia de valores atípicos aislados con residuos elevados refuerza la idea de que existen episodios de mayor volatilidad en la muestra. En conjunto, la gráfica sugiere que el modelo podría estar presentando heterocedasticidad, ya que la varianza no parece mantenerse constante a lo largo de todos los niveles de la variable.
+
+
+
+```{r}
+library(lmtest)
+bptest(modelo42)
+```
+
+
+
+
+```{r}
+library(lmtest)
+gqtest(modelo42, order.by = ~ AAPL, data= Portafoliorefi)
+```
+
+
+# Interpretaciones
+
+El test de Breusch-Pagan arroja un estadístico BP = 64.208 con un p-value = 7.408e-14, el cual es extremadamente pequeño (menor a 0.05). Esto implica que se rechaza la hipótesis nula de homocedasticidad, indicando evidencia estadística fuerte de que la varianza de los errores no es constante.
+
+Por otro lado, el test de Goldfeld-Quandt presenta un p-value = 0.9965, por lo que no se rechaza la hipótesis nula bajo este contraste específico. Sin embargo, este test evalúa un tipo más particular de cambio estructural en la varianza (aumento sistemático entre segmentos), mientras que Breusch-Pagan detecta dependencia general de la varianza respecto a las variables explicativas.
+
+En conjunto, la evidencia más sólida proviene del test de Breusch-Pagan, el cual confirma la presencia de heterocedasticidad en el modelo. Por lo tanto, puede concluirse que el modelo 42 aún presenta problemas de varianza no constante en los errores, algo común en datos financieros debido a la volatilidad variable en el tiempo.
+
+## Correción de Heterosedasticidad
+# Generalized least squares (mínimos cuadrados)
+
+
+```{r}
+Portafoliorefi_log <- Portafoliorefi
+Portafoliorefi_log[] <- lapply(Portafoliorefi_log, function(x) {if(is.numeric(x)) {if(any(x <= 0)) log(x + 1) else log(x)} else {x}})
+varfunc.olsrefi <- lm(log(residuales_modelo42^2 + 0.00001) ~ NVDA + TSLA + MSFT , data = Portafoliorefi)  
+h_techo3 <- exp(varfunc.olsrefi$fitted.values)
+modelo_gls4 <- lm(log(1 + AAPL) ~ NVDA + TSLA + MSFT, data = Portafoliorefi, weights = 1/h_techo3)
+summary(modelo_gls4)
+```
+
+
+
+
+
+# Interpretaciones
+
+Tras aplicar nuevamente el procedimiento GLS utilizando una función de varianza estimada a partir de los residuos del modelo 42, se observa que el modelo mantiene significancia global (F-statistic p-value = 0.002038), aunque el poder explicativo sigue siendo bajo (R² = 0.04). La variable NVDA continúa siendo estadísticamente significativa, mientras que TSLA y MSFT no muestran significancia individual al 5%.
+
+Si bien el ajuste ponderado modifica ligeramente los errores estándar y estabiliza parcialmente la dispersión de los residuos, el modelo no presenta una mejora sustancial en su capacidad explicativa. Esto sugiere que, aunque el procedimiento GLS corrige parcialmente la estructura de varianza estimada, la heterocedasticidad característica de los datos financieros (derivada de la volatilidad cambiante del mercado) no desaparece completamente.
+
+En consecuencia, el modelo presenta una mejora técnica en términos de estimación eficiente, pero estructuralmente la naturaleza volátil de los rendimientos financieros sigue generando variabilidad no constante en los errores.
+
+
+
+# Hacer pruebas BP Y GQ 
+
+Hay que analizar este modelo para ver si no tiene HETERO
+
+
+```{r}
+bptest(modelo_gls4)
+gqtest(modelo_gls4)
+```
+
+
+
+#Interpretaciones
+En el modelo GLS 4, la prueba de Breusch–Pagan arroja un estadístico extremadamente alto (BP = 3,307,526) con un p-value < 2.2e-16, lo que implica que se rechaza contundentemente la hipótesis nula de homocedasticidad. Esto indica que, incluso después de aplicar la corrección mediante ponderación (GLS), la heterocedasticidad persiste de manera significativa. Por otro lado, la prueba de Goldfeld–Quandt presenta un p-value = 0.9973, lo que sugiere que no se detecta un patrón específico de aumento sistemático de la varianza entre segmentos de la muestra. En conjunto, los resultados indican que la varianza de los errores sigue siendo no constante, aunque no necesariamente crece de forma ordenada; más bien, parece reflejar la naturaleza inherentemente volátil y cambiante de los rendimientos financieros.
+
+
+# Graficar para observar si se perdió la heterocedasticidad
+
+
+```{r}
+plot(modelo_gls4$fitted.values, residuals(modelo_gls4),
+     main = "Residuales vs Ajustados (GLS)",
+     xlab = "Valores Predichos",
+     ylab = "Residuales",
+     col = "blue", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+```{r}
+plot(residuals(modelo_gls4),
+     main = "Residuales vs Orden de Datos",
+     xlab = "Índice (Fila)",
+     ylab = "Residuales",
+     col = "darkgreen", pch = 20)
+abline(h = 0, col = "red", lwd = 2)
+```
+
+
+
+
+# Interpretaciones
+
+Residuos vs valores ajustados 
+
+En la gráfica de residuos contra valores ajustados se observa que los puntos se concentran alrededor de cero y no presentan un patrón sistemático claro. La dispersión parece relativamente uniforme en la zona central, aunque siguen apareciendo algunos valores atípicos aislados en los extremos. No se aprecia un patrón en forma de abanico claramente definido, lo que visualmente sugiere una ligera mejora en la estabilidad de la varianza respecto al modelo original, aunque no una corrección completa del problema.
+
+Residuos vs orden de los datos
+
+En la gráfica de residuos respecto al orden de las observaciones, los errores fluctúan alrededor de cero sin mostrar una tendencia persistente creciente o decreciente. Se observan algunos picos aislados de mayor magnitud, pero no forman un patrón continuo en el tiempo. Esto sugiere que el modelo mantiene una estabilidad razonable a lo largo de la muestra y no presenta evidencia visual fuerte de dependencia temporal en los errores.
+
+
+
+## Conclusión final
+La heterocedasticidad no pudo eliminarse completamente porque estamos trabajando con datos financieros, los cuales por naturaleza presentan volatilidad variable en el tiempo (periodos de calma y periodos de alta turbulencia). Aunque se aplicaron transformaciones logarítmicas y un esquema de ponderación tipo GLS para modelar la varianza, la variabilidad de los errores no depende únicamente de las variables explicativas incluidas en el modelo, sino también de factores externos, choques de mercado y cambios estructurales propios del comportamiento bursátil. En otras palabras, el modelo lineal (incluso ponderado) no logra capturar completamente la dinámica de la volatilidad, por lo que la heterocedasticidad persiste de forma estructural. Esto sugiere que el problema no es solo funcional, sino inherente al tipo de datos analizados.
+
+
+## Autocorrelación
+
+## Regresión autocorrelación rezagado refinitiv
+
+
+
+```{r}
+library(dynlm)
+```
+
+```{r}
+serie_aapl2 <- ts(Portafoliorefi$AAPL)
+```
+
+
+```{r}
+reg1_aapl2 <- dynlm(serie_aapl2 ~ L(serie_aapl2) , data = Portafoliorefi)
+print(reg1_aapl2)
+```
+
+# Interpretaciones
+
+Se realizó una regresión del rendimiento actual de AAPL contra su valor rezagado con el fin de evaluar la presencia de autocorrelación en la serie. El coeficiente del rezago es positivo pero pequeño (0.0468), lo que indica que solo una fracción reducida del rendimiento pasado se transmite al rendimiento actual.
+
+Este valor cercano a cero sugiere que la dependencia temporal entre rendimientos consecutivos es débil, por lo que no se observa una autocorrelación fuerte en la serie de rendimientos de AAPL. Esto es consistente con el comportamiento típico de los rendimientos financieros, los cuales suelen aproximarse a un proceso aleatorio con baja persistencia temporal.
+
+
+
+
+```{r}
+library(dynlm)
+
+acciones1 <- colnames(Portafoliorefi)
+
+for (acc in acciones1) {
+  cat("\n====================\n")
+  cat("Autocorrelación:", acc, "\n")
+  
+  serie1 <- ts(Portafoliorefi[[acc]])
+  modelo1 <- dynlm(serie1 ~ L(serie1, 1))
+  
+  print(summary(modelo1)$coefficients)
+}
+```
+
+
+
+
+# Interpretación
+
+Se realizó una regresión del rendimiento actual de cada acción contra su valor rezagado de un periodo con el fin de evaluar la presencia de autocorrelación en las series. En la mayoría de las acciones (AAPL, GOOGL, MSFT y TSLA) el coeficiente del rezago no es estadísticamente significativo y es cercano a cero, lo que indica que el rendimiento pasado no tiene un efecto relevante sobre el rendimiento actual. Esto sugiere que estas series presentan una dependencia temporal débil, consistente con el comportamiento típico de los rendimientos financieros, que suelen aproximarse a un proceso aleatorio.
+
+Sin embargo, en algunas acciones como AMZN, META y especialmente NVDA, el coeficiente del rezago resulta estadísticamente significativo. En NVDA se observa un coeficiente positivo relativamente mayor (≈0.224) y altamente significativo, lo que indica cierta persistencia en los rendimientos. En AMZN el coeficiente es negativo y significativo, lo que sugiere un leve efecto de reversión. No obstante, en general, la mayoría de las acciones muestran autocorrelación baja o inexistente, por lo que el supuesto de ausencia de fuerte dependencia temporal se cumple razonablemente para el conjunto del portafolio.

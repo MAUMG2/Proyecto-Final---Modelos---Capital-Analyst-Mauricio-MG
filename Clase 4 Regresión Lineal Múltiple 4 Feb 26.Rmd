@@ -1,0 +1,549 @@
+---
+title: "Clase Introducción 14 Ene 26"
+output: html_document
+date: "2026-01-15"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+```{r}
+2+3
+```
+
+
+```{r}
+library(quantmod)
+```
+
+
+
+```{r}
+getSymbols("TSLA", from = "2019-11-29" )
+```
+
+
+```{r}
+getSymbols("AAPL", from = "2019-11-29" , to = "2023-11-29")
+```
+
+
+```{r}
+getSymbols("^SPX", from = "2019-11-29")
+```
+
+
+```{r}
+getSymbols("BAC", from = "2019-11-29", to = "2022-11-29")
+```
+
+
+```{r}
+getSymbols("AMZN", from = "2019-11-29", to = "2024-11-29")
+```
+
+
+```{r}
+tsla1 <- (TSLA$TSLA.Close)
+```
+
+
+```{r}
+tsla_apertura <- (TSLA$TSLA.Open)
+```
+
+
+
+
+```{r}
+amzn1 <- (AMZN$AMZN.Close)
+```
+
+
+
+```{r}
+amzn2 <- (AMZN$AMZN.Open)
+```
+
+
+```{r}
+tsla1 <- na.omit(tsla1)
+```
+
+
+```{r}
+amzn1 <- na.omit(amzn1)
+```
+
+
+```{r}
+amzn2 <- na.omit(amzn2)
+```
+
+
+## Daily returns
+Se utiliza para obtener los rendimientos diarios de una acción
+
+
+```{r}
+tsla1_returns <- dailyReturn(tsla1)
+```
+
+
+```{r}
+amzn1_returns <- dailyReturn(amzn1)
+```
+
+
+## Analizando rendimientos de las acciones
+Plot, función que grafica de manera lineal, es la base para graficar.
+Main, es el título, se pone entre comillas.
+Show in new window, lo abre en una página externa, y se puede observar de mejor manera.
+```{r}
+plot(tsla1, main = "Precios cierre TSLA")
+```
+
+
+
+
+
+
+
+```{r}
+plot(tsla1_returns, main = "Rendimientos diarios de TSLA" )
+```
+
+# Histogram
+probability-Probabilidad
+ylim-Rango en y
+
+
+
+```{r}
+hist(tsla1_returns, probability = TRUE, ylim = c(0, 10))
+```
+
+
+
+# Boxplot 
+
+
+```{r}
+boxplot(tsla1_returns, main = "Boxplot de los retornos de TSLA")
+```
+
+
+
+## cálculo de retornos anuales
+
+Nueva variable
+annualReturn
+leading-no tomar en cuenta letras, solo números con FALSE
+
+```{r}
+tsla1_returns_annual <- annualReturn(tsla1, leading = FALSE )
+```
+
+
+
+# Gráfica de barras 
+Le puedes agregar un nombre a la gráfica con el main.
+
+```{r}
+barplot(tsla1_returns_annual, main= "Rendimiento anual TSLA")
+```
+
+
+
+
+# Ejercicio de clase 
+
+Realizar todas las gráficas con AMZN
+
+Plot amzn 
+
+
+
+```{r}
+plot(amzn1, main = "Precios cierre AMZN")
+```
+
+
+
+
+# Rendimientos diarios de AMZN
+
+
+
+```{r}
+plot(amzn1_returns, main = "Rendimientos diarios de AMZN" )
+```
+
+
+
+
+# Histograma de AMZN
+
+
+```{r}
+hist(amzn1_returns, probability = TRUE, ylim = c(0, 20), main = "Histograma de los retornos de AMZN")
+```
+
+
+# boxplot AMZN
+
+
+
+```{r}
+boxplot(amzn1_returns, main = "Boxplot de los retornos de AMZN")
+```
+
+
+
+
+# Cálculo de los retornos anuales AMZN
+
+
+
+```{r}
+amzn1_returns_annual <- annualReturn(amzn1, leading = FALSE )
+```
+
+
+
+
+# Gráfica de barras rendimiento anual AMZN 
+
+
+
+```{r}
+barplot(amzn1_returns_annual, main= "Rendimiento anual AMZN")
+```
+
+
+
+## Regresión Lineal Simple
+
+
+```{r}
+library(MASS)
+library(ISLR)
+```
+
+
+# data
+
+En HELP, podemos buscar data y descargar bases de datos que tiene R históricas.
+Hay que darle doble click cuando aparezca la base de datos como valores, después la buscas en HELP y te arroja los detalles de esa base de datos.
+
+Variable dummy o dicotómica, categorizas numericamente (0 o 1)
+
+
+
+```{r}
+data(Boston)
+```
+
+
+?-HELP
+
+
+```{r}
+?Boston
+```
+
+
+Head-Para que te aparezcan el nombre de las columnas
+
+```{r}
+head(Boston, 5)
+```
+
+
+str- estructura, presenta un diagnóstico resumido 
+
+
+
+
+```{r}
+str(Boston)
+```
+
+
+
+summary- Resumen estadístico de cada variable 
+
+
+```{r}
+summary(Boston)
+```
+
+
+pairs- matriz de gráficas de dispersión
+
+
+
+```{r}
+pairs(Boston)
+```
+
+
+
+attach- Pegar la base de datos en el markdown no en variables
+
+
+
+```{r}
+attach(Boston)
+```
+
+
+
+Plot- En R el código de las variables se escribe X,Y, cuando quiero comparar una con otra. En este caso nos dio una relación negativa y convexa.
+
+```{r}
+plot(lstat, medv, main = "lstat vs medv")
+```
+
+
+# Modelo Lineal Simple
+En este caso si se escribe primero la variable dependiente y después la independiente
+Siempre hay que poner summary, para que te muestre el resultado de esa variable o sea del modelo, etiquetado como variable.
+
+
+```{r}
+modelo1 <- lm(medv ~ lstat)
+summary(modelo1)
+```
+
+
+
+
+
+##Interpretaciones
+
+Residuales:Observaciones más altas, más bajas con respecto al Beta 1.
+
+Coeficientes: 
+Intercepto: Beta 0, donde empieza la línea recta, 
+Error estándar: Cuanto varían las observaciones con respecto al valor. Conviene cuando se aproxime a 0, pero no conviene que sea 0. Entre más perfecto sea el modelo, genera dudas en la vida real.
+
+t value: Significancia del coeficiente, si tiene incidencia ese beta 0 sobre la variable dependiente. De preferencia arriba de 3. Buscar los tres asteriscos siempre (99%)
+
+
+Estimate (lstat): Cuando cambia 1% en X, cuanto cambia Y. Cuanto se mueve y cuando x se mueve una unidad.
+
+Error estándar residual: Tiene que ver con el modelo completo. Nos indica que el promedio de la volatilidad es de 6216 USD.
+
+
+R cuadrada múltiple: Coeficiente de determinación, nos explica de manera global que tanto explican las variables independientes a la dependiente. 
+
+
+##Intervalo de confianza
+
+Graficar el intervalo de los modelos
+
+
+
+```{r}
+?lm
+names(modelo1)
+```
+
+
+
+
+
+```{r}
+confint(modelo1)
+```
+
+
+
+
+
+
+
+
+```{r}
+conf.interval <- predict(modelo1, data.frame(lstat = Boston[, 13]), interval = "confidence")
+pred.interval <- predict(modelo1, data.frame(lstat = Boston[, 13]), interval = "prediction")
+
+plot(lstat, medv, pch = 20, main = "medv vs. lstat", col = "red")
+abline(modelo1, lwd = 2, col = "blue")
+matlines(lstat, conf.interval[,2:3], col = "black", lty = 3)
+matlines(lstat, pred.interval[,2:3], col = "green", lty = 3)
+```
+
+
+
+
+
+
+##Regresión lineal múltiple
+
+
+Con el . invocas todas las variables de la matriz de la variable de Boston
+
+```{r}
+modelo20 <- lm(medv ~ . , data = Boston)
+summary(modelo20)
+```
+
+
+
+
+# Interpretaciones
+
+
+
+El modelo estima el valor medio de las viviendas (medv) usando variables relacionadas con características socioeconómicas, ambientales y de localización en Boston.
+
+El R² del modelo es 0.7406, lo que significa que aproximadamente 74% de la variación en los precios de vivienda es explicada por las variables incluidas, indicando un buen ajuste para un modelo económico real.
+
+El modelo es globalmente significativo, ya que el p-value del estadístico F es prácticamente cero, lo que indica que, en conjunto, las variables explican de forma significativa el precio de las viviendas.
+
+Entre los resultados más importantes se observa que:
+
+La variable crim tiene coeficiente negativo y significativo, indicando que a mayor criminalidad en la zona, menor es el valor de las viviendas.
+
+La variable zn tiene efecto positivo, lo que sugiere que zonas con mayor proporción de terrenos residenciales tienden a tener viviendas de mayor valor.
+
+La variable chas es positiva y significativa, indicando que las viviendas cercanas al río Charles tienden a tener precios más altos.
+
+La variable nox presenta efecto negativo, lo que indica que mayor contaminación reduce el valor de las casas.
+
+El número promedio de habitaciones (rm) tiene un impacto positivo fuerte y significativo, mostrando que casas más grandes valen más, siendo una de las variables más influyentes.
+
+La distancia a centros de empleo (dis) tiene efecto negativo, lo que implica que ubicaciones más alejadas reducen el valor de las viviendas.
+
+Variables relacionadas con impuestos y accesibilidad (tax, rad, ptratio) muestran impactos negativos, sugiriendo que mayores cargas fiscales o peores condiciones educativas reducen precios.
+
+La variable lstat, que mide población de bajo estatus socioeconómico, tiene un efecto negativo muy fuerte, mostrando que zonas con mayor proporción de población de bajos ingresos presentan viviendas de menor valor.
+
+En contraste, la variable age no resulta significativa, indicando que la antigüedad promedio de las viviendas no influye claramente en el precio cuando se consideran las demás variables.
+
+
+
+# Conclusión
+
+El modelo confirma que factores como tamaño de vivienda, calidad del entorno, contaminación, condiciones sociales y ubicación económica son determinantes clave en el precio de las casas, mientras que la edad de las viviendas no parece tener un impacto relevante una vez controladas las demás variables.
+
+
+
+
+
+```{r}
+modelo21 <- lm(medv ~ . - age - indus , data = Boston)
+summary(modelo21)
+```
+
+#Modelo 1 actividad de clase con interpretación
+
+A continuación lo que hice fue obtener el modelo sin las variables positivas o que aumentaban el valor de las casas en el modelo original. En este caso lo que me puedo dar cuenta es que en un inicio la variable de impuestos tenía un signo negativo, sin embargo al correr este modelo, ahora el signo es positivo sin embargo no es significativa. Y la R2 disminuyo de 0.74 a 0.65.
+
+
+
+
+```{r}
+modelo22 <- lm(medv ~ . - black - rm - rad - chas - zn - age - indus , data = Boston)
+summary(modelo22)
+```
+
+
+#Modelo 2 actividad de clase con interpretación
+
+A continuación lo que hice fue correr un modelo con 5 variables sginificativas (con 3 asteriscos), sin embargo ya al correr el modelo, la R2 bajo de 0.74 a 0.60, lo que quiere decir que el mejor modelo es el que incluye todas las variables.
+
+
+
+
+```{r}
+modelo23 <- lm(medv ~ black + zn + rm + rad + ptratio , data = Boston)
+summary(modelo23)
+```
+
+## Problemas del modelo de Regresión (Boston)
+
+# Detección de Multicolinealidad 
+
+
+#Correlación
+
+
+```{r}
+cor(Boston)
+```
+
+
+
+
+# Interpretaciones
+
+La matriz de correlación muestra qué variables están más relacionadas con el precio de las viviendas (medv). Se observa que el número de habitaciones (rm) tiene una relación positiva con el precio, es decir, casas más grandes suelen valer más. En cambio, la variable lstat, que representa población de bajo nivel socioeconómico, presenta una relación negativa fuerte, indicando que en zonas con menor nivel socioeconómico los precios tienden a ser menores.
+
+También se observa que variables asociadas con contaminación, impuestos, criminalidad y condiciones educativas presentan relaciones negativas con el precio de las viviendas.
+
+Finalmente, algunas variables explicativas muestran correlaciones altas entre sí, lo que indica que ciertos factores económicos y urbanos están relacionados y pueden influir conjuntamente en los resultados del modelo.
+
+```{r}
+correlacion_boston <- cor(Boston)
+```
+
+
+
+```{r}
+library(ggcorrplot)
+```
+
+
+
+
+```{r}
+ggcorrplot(correlacion_boston)
+```
+
+
+#VIF
+
+```{r}
+library(car)
+vif(modelo20)
+```
+# Interpretaciones
+
+En este modelo, la mayoría de las variables presentan valores VIF bajos o moderados, por lo que no se observa un problema grave de multicolinealidad. Sin embargo, variables como tax y rad presentan valores más elevados, indicando que están relativamente correlacionadas con otras variables del modelo.
+
+En general, el modelo no muestra problemas severos de colinealidad, por lo que las estimaciones pueden considerarse estables y confiables.
+
+
+
+
+## ACCIONES
+
+Todo lo relacionado a acciones se realizó en la entrega de la tarea 4.
+
+

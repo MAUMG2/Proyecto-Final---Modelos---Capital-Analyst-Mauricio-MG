@@ -1,0 +1,737 @@
+---
+title: "Tarea 4 Clase Regresion Multiple - Acciones - xls Supuestos Modelo"
+output: html_document
+date: "2026-02-09"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+
+## Tarea 4 Regresión Lineal Múltiple Refinitiv 
+
+A continuación realizaremos los modelos de regresión lineal múltiple, utilizando la información de refinitiv, con una frecuencia del precio de 5 minutos, utilizando la fecha del 05/02/26  al 09/02/26. Nuestra variable dependiente será la acción de AAPL y nuestras variables independientes serán las acciones de  AMZN, GOOGL, META, MSFT, NVDA y TSLA.
+
+
+
+
+```{r}
+library(readxl)
+AmazonNPhistory   <- read_excel("AmazonNPhistory.xlsx")
+AppleNPhistory    <- read_excel("AppleNPhistory.xlsx")
+GoogleNPhistory   <- read_excel("GoogleNPhistory.xlsx")
+MetaNPhistory      <- read_excel("MetaNPhistory.xlsx")
+MicrosoftNPhistory<- read_excel("MicrosoftNPhistory.xlsx")
+NvidiaNPhistory   <- read_excel("NvidiaNPhistory.xlsx")
+TeslaNPhistory    <- read_excel("TeslaNPhistory.xlsx")
+```
+
+
+
+
+
+
+
+# Organizar datos
+
+Una vez importadas las bases de datos es necesario asegurar que todas las series utilicen el mismo formato de fecha y hora. Esto permite alinear correctamente los datos entre las distintas acciones y evitar errores al momento de combinar las series. (Año, mes, día, hora, minuto, segundo)
+
+```{r}
+datetime_amznn <- as.POSIXct(
+  AmazonNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_aapln <- as.POSIXct(
+  AppleNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_googln <- as.POSIXct(
+  GoogleNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_metan <- as.POSIXct(
+  MetaNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_msftn <- as.POSIXct(
+  MicrosoftNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_nvdan <- as.POSIXct(
+  NvidiaNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+
+datetime_tslan <- as.POSIXct(
+  TeslaNPhistory$`Local Date`,
+  format = "%Y-%m-%d %H:%M:%S",
+  tz = "UTC"
+)
+```
+
+
+
+
+Con el fin de verificar que las fechas y horas hayan sido convertidas correctamente al formato temporal estándar, se visualizan las primeras observaciones de cada serie de tiempo. Esto permite confirmar que los registros mantienen una estructura consistente y que los datos están correctamente ordenados antes de continuar con el proceso de alineación y análisis.
+
+```{r}
+head(datetime_amznn)
+head(datetime_aapln)
+head(datetime_googln)
+head(datetime_metan)
+head(datetime_msftn)
+head(datetime_nvdan)
+head(datetime_tslan)
+```
+
+
+
+
+Posteriormente, se construye la serie de tiempo para cada acción utilizando la librería xts, la cual permite asociar los precios de cierre con su respectiva fecha y hora. Esto facilita el manejo y alineación de datos financieros en intervalos intradía. Se asigna un nombre a la columna para identificar claramente el activo dentro del análisis posterior.
+
+
+
+
+```{r}
+library(xts)
+
+amzn_close_xts <- xts(
+  AmazonNPhistory$Close,
+  order.by = datetime_amznn
+)
+colnames(amzn_close_xts) <- "AMZN.Close"
+
+aapl_close_xts <- xts(
+  AppleNPhistory$Close,
+  order.by = datetime_aapln
+)
+colnames(aapl_close_xts) <- "AAPL.Close"
+
+
+goog_close_xts <- xts(
+  GoogleNPhistory$Close,
+  order.by = datetime_googln
+)
+colnames(goog_close_xts) <- "GOOGL.Close"
+
+
+meta_close_xts <- xts(
+  MetaNPhistory$Close,
+  order.by = datetime_metan
+)
+colnames(meta_close_xts) <- "META.Close"
+
+
+msft_close_xts <- xts(
+  MicrosoftNPhistory$Close,
+  order.by = datetime_msftn
+)
+colnames(msft_close_xts) <- "MSFT.Close"
+
+
+nvda_close_xts <- xts(
+  NvidiaNPhistory$Close,
+  order.by = datetime_nvdan
+)
+colnames(nvda_close_xts) <- "NVDA.Close"
+
+
+tsla_close_xts <- xts(
+  TeslaNPhistory$Close,
+  order.by = datetime_tslan
+)
+colnames(tsla_close_xts) <- "TSLA.Close"
+
+
+
+
+```
+
+
+
+
+Una vez construidas las series de tiempo, se eliminan las observaciones con valores de 0 utilizando la función na.omit.
+
+
+
+```{r}
+aapl_close_xts <- na.omit(aapl_close_xts)
+amzn_close_xts <- na.omit(amzn_close_xts)
+goog_close_xts <- na.omit(goog_close_xts)
+meta_close_xts <- na.omit(meta_close_xts)
+msft_close_xts <- na.omit(msft_close_xts)
+nvda_close_xts <- na.omit(nvda_close_xts)
+tsla_close_xts <- na.omit(tsla_close_xts)
+```
+
+
+
+
+
+A continuación verificaremos el número de observaciones disponibles en cada serie de tiempo. Esto permite identificar posibles diferencias en la cantidad de registros entre las acciones y comprobar si es necesario realizar un ajuste para que todas las series tengan la misma longitud temporal antes de aplicar el análisis econométrico.
+
+
+
+
+```{r}
+sapply(list(
+  AAPL=aapl_close_xts, AMZN=amzn_close_xts, GOOGL=goog_close_xts, META=meta_close_xts,
+  MSFT=msft_close_xts, NVDA=nvda_close_xts, TSLA=tsla_close_xts
+), NROW)
+```
+
+
+Como nos pudimos dar cuenta en el paso anterior, tenemos distintos datos en las bases por lo que ahora debemos normalizar los timestamps a intervalos exactos de cinco minutos. Este procedimiento garantiza que todas las series queden alineadas bajo la misma estructura temporal y evita duplicados de registros que podrían afectar el análisis.
+
+
+```{r}
+library(lubridate)
+
+normalize_5min <- function(x) {
+  idx <- as.POSIXct(floor_date(as.POSIXct(index(x), tz="UTC"), "5 minutes"), tz="UTC")
+  index(x) <- idx
+  x <- x[!duplicated(index(x))]
+  x
+}
+
+aapl_close_xts <- normalize_5min(aapl_close_xts)
+amzn_close_xts <- normalize_5min(amzn_close_xts)
+goog_close_xts <- normalize_5min(goog_close_xts)
+meta_close_xts <- normalize_5min(meta_close_xts)
+msft_close_xts <- normalize_5min(msft_close_xts)
+nvda_close_xts <- normalize_5min(nvda_close_xts)
+tsla_close_xts <- normalize_5min(tsla_close_xts)
+```
+
+
+
+
+A continuación lo que haremos será identificar los timestamps que están presentes en todas las acciones analizadas. Esto permite asegurar que el análisis se realice utilizando observaciones comparables en el mismo instante temporal.
+
+
+
+
+```{r}
+idx_common <- Reduce(intersect, list(
+  index(aapl_close_xts),
+  index(amzn_close_xts),
+  index(goog_close_xts),
+  index(meta_close_xts),
+  index(msft_close_xts),
+  index(nvda_close_xts),
+  index(tsla_close_xts)
+))
+
+length(idx_common)
+```
+
+
+
+
+
+
+Una vez que identificamos los timestamps comunes entre todas las series, cada acción se recorta utilizando únicamente esos registros compartidos, lo cual es fundamental para poder realizar comparaciones y estimaciones econométricas consistentes.
+
+
+
+```{r}
+aapl_close_xts <- aapl_close_xts[idx_common]
+amzn_close_xts <- amzn_close_xts[idx_common]
+goog_close_xts <- goog_close_xts[idx_common]
+meta_close_xts <- meta_close_xts[idx_common]
+msft_close_xts <- msft_close_xts[idx_common]
+nvda_close_xts <- nvda_close_xts[idx_common]
+tsla_close_xts <- tsla_close_xts[idx_common]
+```
+
+
+
+
+
+Antes de continuar debemos verificar nuevamente el número de observaciones en cada serie de tiempo después del proceso de alineación. Esto permite confirmar que todas las acciones contienen exactamente la misma cantidad de datos y que las series están correctamente sincronizadas antes de proceder al cálculo de rendimientos y estimación de modelos de regresión.
+
+
+
+
+```{r}
+sapply(list(
+  AAPL=aapl_close_xts,
+  AMZN=amzn_close_xts,
+  GOOGL=goog_close_xts,
+  META=meta_close_xts,
+  MSFT=msft_close_xts,
+  NVDA=nvda_close_xts,
+  TSLA=tsla_close_xts
+), NROW)
+```
+
+
+## Retornos
+
+A continuación obtendremos los rendimientos de cada acción para poder compararlos
+
+
+
+.
+```{r}
+aapl_rendimientos2 <- diff(log(aapl_close_xts))
+amzn_rendimientos2 <- diff(log(amzn_close_xts))
+goog_rendimientos2 <- diff(log(goog_close_xts))
+meta_rendimientos2 <- diff(log(meta_close_xts))
+msft_rendimientos2 <- diff(log(msft_close_xts))
+nvda_rendimientos2 <- diff(log(nvda_close_xts))
+tsla_rendimientos2 <- diff(log(tsla_close_xts))
+```
+
+## Modelo Regresión lineal Múltiple Refinitiv
+
+Para poder usar el código lm, debemos tener todas nuestros datos en una sola base de datos, la cual nombraremos Portafoliorefi.
+
+
+```{r}
+Portafoliorefi <- data.frame(
+  AAPL = as.numeric(aapl_rendimientos2),
+  AMZN = as.numeric(amzn_rendimientos2),
+  GOOGL = as.numeric(goog_rendimientos2),
+  META = as.numeric(meta_rendimientos2),
+  MSFT = as.numeric(msft_rendimientos2),
+  NVDA = as.numeric(nvda_rendimientos2),
+  TSLA = as.numeric(tsla_rendimientos2)
+)
+```
+
+
+
+## Primer modelo 
+
+A continuación, ahora si realizaremos el modelo.
+
+
+```{r}
+modelo40 <- lm(AAPL ~ . , data = Portafoliorefi)
+summary(modelo40)
+```
+
+# Interpretaciones
+
+Los residuales del modelo presentan valores pequeños y cercanos a cero, lo que indica que las diferencias entre los rendimientos observados de Apple y los estimados por el modelo no son grandes en promedio. Esto sugiere que el modelo logra capturar parte del comportamiento de la serie, aunque no existe un ajuste perfecto entre los activos.
+
+El intercepto es igual a −1.575e−05, el cual representa el rendimiento promedio de Apple cuando los rendimientos de todas las demás acciones son iguales a cero. Este valor es prácticamente nulo, lo que indica que no existe un rendimiento base significativo cuando el resto del mercado no presenta variaciones en ese intervalo.
+
+En cuanto a las variables explicativas, se observa que no todas presentan la misma relevancia estadística. Por ejemplo, el coeficiente asociado a GOOGL es negativo y estadísticamente significativo, lo que indica que movimientos en los rendimientos de Google tienen una relación inversa con los rendimientos de Apple dentro del periodo analizado. Asimismo, NVDA presenta un coeficiente negativo y altamente significativo, lo que indica que los cambios en Nvidia tienen una influencia importante sobre el comportamiento de Apple en la muestra considerada.
+
+Por otro lado, AMZN, META y MSFT presentan coeficientes positivos, pero no resultan estadísticamente significativos al nivel convencional, lo que sugiere que su efecto sobre Apple no puede diferenciarse claramente del ruido estadístico en este periodo. En contraste, TSLA muestra un coeficiente positivo y significativo, indicando que cuando Tesla presenta incrementos en sus rendimientos, Apple tiende también a registrar incrementos, aunque con menor magnitud.
+
+El error estándar residual del modelo es 0.001176, lo que indica que la variación promedio de los errores del modelo es relativamente baja, aunque todavía existe una parte importante del movimiento de Apple que no es explicada por las demás acciones.
+
+La R² del modelo es 0.0847, lo que implica que aproximadamente el 8.47% de la variación de los rendimientos de Apple es explicada por los rendimientos del resto de acciones incluidas en el modelo. Esto indica que, aunque existe cierta relación entre los activos, la mayor parte del comportamiento de Apple depende de factores propios o de variables no incluidas en el modelo.
+
+Finalmente, el estadístico F del modelo resulta significativo, lo cual indica que, en conjunto, las variables explicativas sí aportan información relevante para explicar el comportamiento de Apple, aunque el poder explicativo total sigue siendo moderado.
+
+
+
+# Conclusión
+
+Existe evidencia de que algunos activos del portafolio, particularmente Nvidia, Google y Tesla, influyen de manera significativa en los movimientos de Apple durante el periodo analizado. Sin embargo, el modelo muestra que gran parte de la variación de Apple se debe a factores propios o a variables externas no incluidas en el análisis, por lo que el ajuste general del modelo es limitado.
+
+
+
+## Segundo modelo
+
+
+
+A continuación realizaré un segundo modelo, utilizando las variables que resultaron significativas en el primero modelo (NVDA, TSLA, GOOGL)
+
+
+
+
+```{r}
+modelo41 <- lm(AAPL ~ NVDA + TSLA + GOOGL, data = Portafoliorefi)
+summary(modelo41)
+```
+
+
+
+# Interpretaciones
+
+Los residuales presentan valores cercanos a cero, lo que indica que las diferencias entre los rendimientos observados y los estimados de Apple por el modelo son relativamente pequeñas, aunque el ajuste no es perfecto.
+
+El intercepto es −7.19e−06 y no resulta estadísticamente significativo, lo que indica que el rendimiento esperado de Apple es prácticamente cero cuando Nvidia, Tesla y Google no presentan variaciones en el periodo analizado.
+
+En cuanto a las variables explicativas, Nvidia presenta un coeficiente negativo de −1.390e−01 y es altamente significativo, indicando que incrementos en sus rendimientos suelen asociarse con movimientos en sentido contrario en Apple. Por su parte, Tesla muestra un coeficiente positivo de 1.113e-01 y estadísticamente significativo, lo que indica que incrementos en Tesla tienden a acompañarse de incrementos en los rendimientos de Apple. En contraste, Google presenta un coeficiente negativo de -5.851e-02, pero con una significancia estadística más débil, por lo que su efecto es menos claro.
+
+El error estándar residual del modelo es 0.001182, lo que indica que aún existe variabilidad no explicada en los rendimientos de Apple. Asimismo, el valor de R² muestra que aproximadamente el 6.86% de la variación de Apple es explicada por estas acciones, por lo que la mayor parte de sus movimientos depende de otros factores no incluidos en el modelo.
+
+# Conclusión
+
+El modelo muestra que Nvidia y Tesla son las acciones que presentan mayor influencia sobre los movimientos de Apple en el periodo analizado, aunque el poder explicativo total del modelo es limitado. Aunque existen relaciones entre estos activos, Apple mantiene un comportamiento en gran medida independiente, lo cual es relevante al considerar estrategias de diversificación dentro del portafolio.
+
+
+## Problemas del modelo de Regresión (Portafoliorefi)
+
+
+# Detección de Multicolinealidad 
+
+
+#Correlación
+
+
+
+```{r}
+Portafoliorefi <- na.omit(Portafoliorefi)
+cor(Portafoliorefi)
+```
+
+
+En general, las acciones tecnológicas muestran una relación positiva moderada entre sí, lo que indica que tienden a reaccionar de manera similar ante condiciones de mercado. Sin embargo, Apple presenta una relación más débil con el resto, lo cual puede aportar cierto efecto de diversificación dentro del portafolio.
+
+
+
+
+```{r}
+correlacion_Portafoliorefi <- cor(Portafoliorefi)
+```
+
+
+
+```{r}
+library(ggcorrplot)
+ggcorrplot(correlacion_Portafoliorefi)
+```
+
+
+# Interpretaciones
+
+La matriz y el mapa de calor muestran que varias acciones tecnológicas presentan correlaciones positivas moderadas entre sí, indicando que tienden a moverse en la misma dirección. Esto explica por qué algunas variables pierden significancia en el modelo de regresión, ya que contienen información similar. En contraste, Apple presenta correlaciones más bajas con algunas acciones, lo que puede aportar cierto efecto de diversificación en el portafolio.
+
+
+## VIF modelo uno 
+
+
+```{r}
+library(car)
+vif(modelo40)
+```
+
+
+# Interpretaciones
+El análisis de multicolinealidad mediante el VIF muestra valores cercanos a 1 para todas las variables explicativas, lo que indica que no existe una correlación fuerte entre ellas. Por lo tanto, no se detectan problemas de multicolinealidad y el modelo puede interpretarse con confianza sin necesidad de eliminar variables adicionales.
+
+
+## VIF modelo dos 
+
+
+```{r}
+vif(modelo41)
+```
+
+
+# Interpretaciones
+
+Analizando el VIF del modelo de solo las variables significativas, se acerca aún más a 1, lo que quiere decir que no existe multicolinealidad y es más acertado.
+
+
+
+
+
+
+
+## Tarea 4 Regresión lineal múltiple con getsymbols
+
+
+
+```{r}
+library(quantmod)
+getSymbols("AAPL",  from = "2023-01-01")
+getSymbols("JPM",  from = "2023-01-01")
+getSymbols("XOM",  from = "2023-01-01")
+getSymbols("UNH",  from = "2023-01-01")
+getSymbols("PG",   from = "2023-01-01")
+getSymbols("CAT",  from = "2023-01-01")
+getSymbols("WMT",  from = "2023-01-01")
+getSymbols("HD",   from = "2023-01-01")
+getSymbols("COST", from = "2023-01-01")
+```
+
+
+
+```{r}
+aapl1 <- (AAPL$AAPL.Close)
+jpm1  <- (JPM$JPM.Close)
+xom1  <- (XOM$XOM.Close)
+unh1  <- (UNH$UNH.Close)
+pg1   <- (PG$PG.Close)
+cat1  <- (CAT$CAT.Close)
+wmt1  <- (WMT$WMT.Close)
+hd1   <- (HD$HD.Close)
+cost1 <- (COST$COST.Close)
+```
+
+
+
+```{r}
+aapl1 <- na.omit(aapl1)
+jpm1  <- na.omit(jpm1)
+xom1  <- na.omit(xom1)
+unh1  <- na.omit(unh1)
+pg1   <- na.omit(pg1)
+cat1  <- na.omit(cat1)
+wmt1  <- na.omit(wmt1)
+hd1   <- na.omit(hd1)
+cost1 <- na.omit(cost1)
+```
+
+
+
+
+```{r}
+sapply(list(
+  AAPL=aapl1,
+  JPM=jpm1,
+  XOM=xom1,
+  UNH=unh1,
+  PG=pg1,
+  CAT=cat1,
+  WMT=wmt1,
+  HD=hd1,
+  COST=cost1
+), NROW)
+```
+
+
+
+
+
+
+## Daily returns
+
+Se utiliza para obtener los rendimientos diarios de una acción.
+
+
+
+
+
+
+```{r}
+aapl1_rendimientos  <- dailyReturn(aapl1)
+jpm1_rendimientos  <- dailyReturn(jpm1)
+xom1_rendimientos  <- dailyReturn(xom1)
+unh1_rendimientos  <- dailyReturn(unh1)
+pg1_rendimientos   <- dailyReturn(pg1)
+cat1_rendimientos  <- dailyReturn(cat1)
+wmt1_rendimientos  <- dailyReturn(wmt1)
+hd1_rendimientos   <- dailyReturn(hd1)
+cost1_rendimientos <- dailyReturn(cost1)
+```
+
+
+
+
+
+```{r}
+aapl1_rendimientos  <- na.omit(aapl1_rendimientos)
+jpm1_rendimientos  <- na.omit(jpm1_rendimientos)
+xom1_rendimientos  <- na.omit(xom1_rendimientos)
+unh1_rendimientos  <- na.omit(unh1_rendimientos)
+pg1_rendimientos   <- na.omit(pg1_rendimientos)
+cat1_rendimientos  <- na.omit(cat1_rendimientos)
+wmt1_rendimientos  <- na.omit(wmt1_rendimientos)
+hd1_rendimientos   <- na.omit(hd1_rendimientos)
+cost1_rendimientos <- na.omit(cost1_rendimientos)
+```
+
+
+## Modelo Regresión lineal Múltiple getSymbols
+
+Para poder usar el código lm, debemos tener todas nuestros datos en una sola base de datos, la cual nombraremos PortafoliogetS.
+
+
+
+
+```{r}
+PortafoliogetS <- data.frame(
+  AAPL  = as.numeric(aapl1_rendimientos),
+  JPM  = as.numeric(jpm1_rendimientos),
+  XOM  = as.numeric(xom1_rendimientos),
+  UNH  = as.numeric(unh1_rendimientos),
+  PG   = as.numeric(pg1_rendimientos),
+  CAT  = as.numeric(cat1_rendimientos),
+  WMT  = as.numeric(wmt1_rendimientos),
+  HD   = as.numeric(hd1_rendimientos),
+  COST = as.numeric(cost1_rendimientos)
+)
+```
+
+
+
+
+## Primer modelo 
+
+A continuación, ahora si realizaremos el modelo.
+
+
+```{r}
+modelo50 <- lm(AAPL ~ . , data = PortafoliogetS)
+summary(modelo50)
+```
+
+
+# Interpretaciones
+
+Los residuales muestran errores moderados entre los rendimientos observados y estimados de AAPL, con valores entre -0.061 y 0.095, indicando que el modelo captura parte del comportamiento del activo, aunque aún existe volatilidad no explicada.
+
+El intercepto es 0.000288 y no es estadísticamente significativo, lo que indica que no existe un rendimiento base relevante cuando el resto de las acciones no presentan cambios.
+
+Las acciones con mayor influencia significativa sobre AAPL son COST (0.2517), CAT (0.1448), HD (0.1779) y JPM (0.1181), mostrando que cuando estas acciones suben 1%, AAPL tiende a moverse en la misma dirección. En cambio, XOM, UNH, PG y WMT no resultan significativas en el modelo.
+
+El modelo presenta un R² de 0.2316, lo que indica que alrededor del 23% de la variación de AAPL es explicada por las acciones incluidas, resultado razonable en mercados financieros.
+
+# Conclusión
+El comportamiento de AAPL está más relacionado con empresas ligadas al consumo y actividad económica como COST, HD y CAT, por lo que estos activos podrían ser atractivos para complementar en el portafolio en el simulador.
+
+
+
+
+## Segundo modelo 
+
+
+A continuación realizaré un segundo modelo, utilizando las variables que resultaron significativas en el primero modelo (JPM, HD, COST, CAT)
+
+
+
+
+```{r}
+modelo51 <- lm(AAPL ~ JPM + HD + COST + CAT , data = PortafoliogetS)
+summary(modelo51)
+```
+
+
+
+
+# Interpretaciones 
+
+
+Los residuales del modelo presentan valores entre -0.064 y 0.099, indicando que el modelo logra explicar parte del comportamiento de AAPL aunque aún existe variabilidad propia del mercado que no se captura completamente.
+
+El intercepto es 0.000365 y no resulta estadísticamente significativo, por lo que no existe un rendimiento base relevante cuando las demás acciones no presentan movimientos.
+
+Todas las variables incluidas son estadísticamente significativas. COST presenta la mayor influencia (0.290), seguida por HD (0.189), CAT (0.148) y JPM (0.126), indicando que cuando estas acciones suben 1%, AAPL tiende a aumentar en proporción similar durante el periodo analizado.
+
+El modelo presenta un R² de 0.225, por lo que alrededor del 22% de la variación en los rendimientos de AAPL es explicada por estas acciones, un resultado razonable para datos financieros.
+
+# Conclusión
+
+
+El rendimiento de AAPL se encuentra principalmente relacionado con empresas ligadas al consumo y actividad económica como COST, HD y CAT, además del sector financiero representado por JPM, por lo que estas acciones pueden considerarse buenas candidatas para complementar el portafolio de inversión.
+
+
+
+
+## Problemas del modelo de Regresión (PortafoliogetS)
+
+# Detección de Multicolinealidad 
+
+
+#Correlación
+
+
+
+
+
+
+
+```{r}
+cor(PortafoliogetS)
+```
+
+
+
+# Interpretaciones
+
+La correlación muestra que AAPL presenta relaciones positivas moderadas con la mayoría de las acciones del portafolio, destacando HD (0.346), COST (0.345) y CAT (0.328), lo que indica que cuando estas empresas suben, Apple tiende a moverse en la misma dirección. Esto coincide con el resultado de la regresión, donde estas acciones también resultaron significativas.
+
+Las correlaciones entre AAPL y acciones defensivas como PG (0.147) y UNH (0.008) son bajas, lo que sugiere que estos activos se mueven de forma más independiente respecto a Apple, aportando potencial diversificación.
+
+Entre las acciones del portafolio, destacan correlaciones relativamente altas como JPM–CAT (0.508) y WMT–COST (0.538), lo que indica que algunas empresas del mismo tipo de actividad económica tienden a moverse juntas.
+
+# Conclusión
+
+Apple se relaciona más con empresas ligadas al consumo y actividad económica como HD, COST y CAT, mientras que sectores defensivos presentan menor relación, lo cual puede ayudar a balancear el portafolio y hacerlo diversificado.
+
+
+
+
+```{r}
+correlacion_portafoliogetS <- cor(PortafoliogetS)
+```
+
+
+
+
+
+```{r}
+ggcorrplot(correlacion_portafoliogetS)
+```
+
+
+
+
+## VIF modelo uno
+
+```{r}
+vif(modelo50)
+```
+
+
+
+# Interpretaciones
+
+
+Los valores de VIF se encuentran entre 1.02 y 1.55, lo cual indica que no existe multicolinealidad relevante entre las variables del portafolio. Esto significa que cada acción aporta información distinta para explicar el comportamiento de AAPL y que el modelo es estadísticamente estable.
+
+
+
+
+## VIF modelo dos
+
+```{r}
+vif(modelo51)
+```
+
+
+# Interpretaciones
+
+Analizando el VIF del modelo de solo las variables significativas, se acerca aún más a 1, lo que quiere decir que no existe multicolinealidad y es más acertado.
